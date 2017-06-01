@@ -1,19 +1,11 @@
 a) Which advantages do direct pointing devices have over indirect pointing devices? Name one use case where using a direct
 pointing device would not make any sense.
+The advantage of a direct pointing device is that the user can directly touch its target, so it improves speed and is simple to use for him. Zooming into a map for example can be easier, even though it might not be as accurate as using an indirect pointing device. Furthermore, he doesnâ€™t have to search for another pointing device to perform his intended action.
+For a Flight Simulator a direct pointing device wouldnâ€™t make any sense, as the actions have to be very accurate.
 
-Flight Simulator
-
-b) How would you characterize “Shift” based on the classification criteria mentioned in the Wikipedia article?
-In summary, the experimental design was:
-3 Techniques (Shift, Offset, and Touch) ×
-2 Contact styles (FingerTip and Fingernail) ×
-3 Blocks ×
-6 Sizes (6, 12, 18, 24, 48, 96 px) ×
-4 Directions (NW, NE, SW, SE)
-= 432 data points per participant 
-
-
+b) How would you characterize â€œShiftâ€ based on the classification criteria mentioned in the Wikipedia article?
+â€Shiftâ€œ is an direct, relative, isotonic, position-control input device with two degrees of freedom and two states.
 
 c) What is the size of the display used in the study?
 The experiment was conducted on the IPAQ PDA.
-It has a 550 × 730mm, 240 × 320px, display producing an effective resolution of 0.436px/mm.
+It has a 550 Ã— 730mm (according to the text, meant was probably 55 x 73 mm), 240 Ã— 320px, display producing an effective resolution of 0.436px/mm.

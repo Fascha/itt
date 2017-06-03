@@ -49,7 +49,7 @@ TODO
 
 read config
 
-present muktiple targets
+present multiple targets
 
 
 
@@ -64,10 +64,9 @@ DISTANCES: 170, 300, 450, 700
 
 
 import sys
-
 from PyQt5 import QtGui, QtWidgets, QtCore
-
 from enum import Enum
+import configparser
 
 
 class States(Enum):
@@ -112,7 +111,7 @@ class Test(QtWidgets.QWidget):
     def initUI(self):
 
         # setGeometry(int posx, int posy, int w, int h)
-        self.setGeometry(480, 480, self.WIDTH, self.HEIGHT)
+        self.setGeometry(0, 0, 1000, 1000)
         self.setWindowTitle('Pointing Experiment')
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
@@ -165,6 +164,7 @@ def main():
         # sys.argv[0] is name of the script
         sys.stderr.write("Usage: {} <setup file>\n".format(sys.argv[0]))
         sys.exit(1)
+    print(read_config(sys.argv[1]))
 
     model = Model(*read_config(sys.argv[1]))
     test = Test(model)
@@ -172,26 +172,35 @@ def main():
 
 
 def read_config(filename):
-    lines = open(filename, 'r').readlines()
-    if lines[0].startswith("USER:"):
-        user_id = lines[0].split(":")[1].strip()
+    # lines = open(filename, 'r').readlines()
+    # if lines[0].startswith("USER:"):
+    #     user_id = lines[0].split(":")[1].strip()
+    # else:
+    #     print("Error: wrong file format.")
+    #
+    # if lines[1].startswith("WIDTHS:"):
+    #     width_string = lines[1].split(":")[1].strip()
+    #     widths = [int(x) for x in width_string.split(",")]
+    # else:
+    #     print("Error: wrong file format.")
+    #
+    # if lines[2].startswith("DISTANCES:"):
+    #     distance_string = lines[2].split(":")[1].strip()
+    #     distances = [int(x) for x in distance_string.split(",")]
+    # else:
+    #     print("Error: wrong file format.")
+    #
+    # return user_id, widths, distances
+
+    config = configparser.ConfigParser()
+    config.read(filename)
+
+    config = config['POINTING EXPERIMENT']
+
+    if config['user'] and config['widths'] and config['distances']:
+        return config['user'], config['widths'], config['distances']
     else:
         print("Error: wrong file format.")
-
-    if lines[1].startswith("WIDTHS:"):
-        width_string = lines[1].split(":")[1].strip()
-        widths = [int(x) for x in width_string.split(",")]
-    else:
-        print("Error: wrong file format.")
-
-    if lines[2].startswith("DISTANCES:"):
-        distance_string = lines[2].split(":")[1].strip()
-        distances = [int(x) for x in distance_string.split(",")]
-    else:
-        print("Error: wrong file format.")
-
-    return user_id, widths, distances
-
 
 if __name__ == '__main__':
     main()

@@ -69,12 +69,20 @@ from enum import Enum
 import configparser
 
 
+
 class States(Enum):
     INSTRUCTIONS = "INSTRUCTIONS"
     TEST = "TEST"
     PAUSE = "PAUSE"
     END = "END"
 
+
+class Circle(object):
+    def __init__(self, x, y, size=20, hightlighted=False):
+        self.x = x
+        self.y = y
+        self.size = size
+        self.highlighted = hightlighted
 
 
 class Model(object):
@@ -85,9 +93,31 @@ class Model(object):
         self.sizes = sizes
         self.distances = distances
         self.repetitions = repetitions
+        self.num_task = 0
+        self.tasks = []
 
+    def setupTasks(self):
+        self.tasks.append(Circle(400, 400, 40, True))
+        self.tasks.append(Circle(300, 400))
 
+        for x in range(len(self.distances)):
+            """
 
+            random oder mit gewissen algorithmus?
+
+            doppelte for schleife um listen in den listen zu erzeugen
+            eine liste enthält alle circles für den task und alle diese listen sind in der oberliste
+
+            """
+            t = []
+            for i in range(20):
+                t.append(Circle(20, 200))
+
+            self.tasks.append(t)
+
+    def currentTask(self):
+
+        return self.tasks[self.num_task]
 
     def timestamp(self):
         return QtCore.QDateTime.currentDateTime().toString(QtCore.Qt.ISODate)
@@ -101,11 +131,8 @@ class Test(QtWidgets.QWidget):
 
     def __init__(self, model):
         super().__init__()
-
         self.model = model
-
         self.initUI()
-
         self.current_state = States.INSTRUCTIONS
 
     def initUI(self):
@@ -128,13 +155,9 @@ class Test(QtWidgets.QWidget):
         if self.current_state == States.INSTRUCTIONS:
             self.drawInstructions(event, qp)
         elif self.current_state == States.TEST:
-            pass
+            self.drawTest(event, qp)
         elif self.current_state == States.END:
             pass
-
-        # self.drawBackground(event, qp)
-        # self.drawText(event, qp)
-        # self.drawTarget(event, qp)
 
 
         qp.end()
@@ -145,17 +168,46 @@ class Test(QtWidgets.QWidget):
     def mousePressEvent(self, e):
         pass
 
+    def keyPressEvent(self, event):
+        if self.current_state == States.INSTRUCTIONS and event.key() == QtCore.Qt.Key_Space:
+            self.current_state = States.TEST
+            self.update()
+
+
+    def drawTest(self, event, qp):
+        print("drawing test")
+        self.drawCircles(event, qp)
+
     def drawInstructions(self, event, qp):
-        pass
+        print("drawing instructions")
+        qp.setFont(QtGui.QFont('Helvetica', 32))
+        qp.drawText(event.rect(), QtCore.Qt.AlignCenter, "POINTING EXPERIMENT\n\n")
+        qp.setFont(QtGui.QFont('Helvetica', 16))
+        qp.drawText(event.rect(), QtCore.Qt.AlignCenter, "IN THE FOLLOWING SCREENS YOU WILL BE PRESENTED SOME CIRCLES\nPLEASE CLICK THE HIGHLIGHTED CIRCLE")
 
 
+
+
+    def drawBackground(self, event, qp):
+        qp.setBrush(QtGui.QColor(22, 200, 22))
+        qp.drawRect(event.rect())
+
+    def drawCircles(self, event, qp):
+        for circle in self.model.currentTask():
+            x, y, size, highlighted = circle.x, circle.y, circle.size, circle.highlighted
+
+            if highlighted:
+                qp.setBrush(QtGui.QColor(200, 34, 20))
+            else:
+                qp.setBrush(QtGui.QColor(33, 34, 20))
+
+            qp.drawEllipse(x-size/2, y-size/2, size, size)
 
 
 def main():
 
     # model erstellen
     # test model übergeben
-
 
     app = QtWidgets.QApplication(sys.argv)
 
@@ -198,7 +250,9 @@ def read_config(filename):
     config = config['POINTING EXPERIMENT']
 
     if config['user'] and config['widths'] and config['distances']:
-        return config['user'], config['widths'], config['distances']
+        widths = [int(x) for x in config['widths'].split(",")]
+        distances = [int(x) for x in config['distances'].split(",")]
+        return config['user'], widths, distances
     else:
         print("Error: wrong file format.")
 

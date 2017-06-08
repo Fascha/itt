@@ -171,9 +171,29 @@ class Test(QtWidgets.QWidget):
         qp.end()
 
     def mouseMoveEvent(self, e):
+        """
+        when mosue is moved first we need to start measurement
+        (setter method needs to be called)
+
+        """
         pass
 
     def mousePressEvent(self, e):
+        """
+
+        check if distance between click and highlighted circle is smallerthan radius of highlighted circle
+
+        pythagoras
+        distance = math.sqrt((highlightedX - clickX)**2 + (highlightedY - clickY)**2)
+
+        if distance < highlighted.radius:
+            .......
+            .......
+            highlighted clicked
+        else:
+            highlighted not clicked
+
+        """
         pass
 
     def keyPressEvent(self, event):

@@ -13,8 +13,8 @@ P = Pre-Attentive (Red/Blue)
 D = Distraction
 N = No Distraction
 
-B = Blau
-R = Rot
+B = Blue
+R = Red
 
 E = Even
 O = Odd

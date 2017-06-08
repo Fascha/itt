@@ -96,6 +96,8 @@ class Model(object):
         self.num_task = 0
         self.tasks = []
 
+        self.currentTarget = None
+
         self.setupTasks()
 
     def setupTasks(self):
@@ -135,6 +137,23 @@ class Model(object):
     def debug(self, msg):
         sys.stderr.write(self.timestamp() + ": " + str(msg) + "\n")
 
+    def checkHit(self, target, clickX, clickY):
+        """
+
+        check if distance between click and currentTarget circle is smaller than radius of currentTarget circle
+
+        pythagoras
+        distance = math.sqrt((target.x - clickX)**2 + (target.y - clickY)**2)
+
+        if distance < target.size/2:
+            .......
+            .......
+            highlighted clicked
+        else:
+            highlighted not clicked
+
+        """
+        pass
 
 
 class Test(QtWidgets.QWidget):
@@ -178,23 +197,16 @@ class Test(QtWidgets.QWidget):
         """
         pass
 
-    def mousePressEvent(self, e):
-        """
+    def mousePressEvent(self, ev):
+        # see model.checkHit!!
+        if ev.button() == QtCore.Qt.LeftButton:
 
-        check if distance between click and highlighted circle is smallerthan radius of highlighted circle
-
-        pythagoras
-        distance = math.sqrt((highlightedX - clickX)**2 + (highlightedY - clickY)**2)
-
-        if distance < highlighted.radius:
-            .......
-            .......
-            highlighted clicked
-        else:
-            highlighted not clicked
-
-        """
-        pass
+            hit = self.model.checkHit(self.currentTarget, ev.x(), ev.y())
+            if hit:
+                # this executes if the position of the mosueclick is within the highlighted circle
+                # QtGui.QCursor.setPos(self.mapToGlobal(QtCore.QPoint(self.start_pos[0], self.start_pos[1])))
+                pass
+            self.update()
 
     def keyPressEvent(self, event):
         if self.current_state == States.INSTRUCTIONS and event.key() == QtCore.Qt.Key_Space:
@@ -216,9 +228,6 @@ class Test(QtWidgets.QWidget):
         qp.setFont(QtGui.QFont('Helvetica', 16))
         qp.drawText(event.rect(), QtCore.Qt.AlignCenter, "IN THE FOLLOWING SCREENS YOU WILL BE PRESENTED SOME CIRCLES\nPLEASE CLICK THE HIGHLIGHTED CIRCLE")
 
-
-
-
     def drawBackground(self, event, qp):
         qp.setBrush(QtGui.QColor(22, 200, 22))
         qp.drawRect(event.rect())
@@ -229,6 +238,7 @@ class Test(QtWidgets.QWidget):
 
             if highlighted:
                 qp.setBrush(QtGui.QColor(200, 34, 20))
+                self.currentTarget = circle
             else:
                 qp.setBrush(QtGui.QColor(33, 34, 20))
 

@@ -67,7 +67,7 @@ import sys
 from PyQt5 import QtGui, QtWidgets, QtCore
 from enum import Enum
 import configparser
-
+import math, random
 
 
 class States(Enum):
@@ -78,7 +78,7 @@ class States(Enum):
 
 
 class Circle(object):
-    def __init__(self, x, y, size=20, hightlighted=False):
+    def __init__(self, x, y, hightlighted, size=20):
         self.x = x
         self.y = y
         self.size = size
@@ -121,9 +121,11 @@ class Model(object):
 
             """
             t = []
-            for i in range(20):
+            # zufällige Position im radius um den Startpunkt berechnen 
+            t.append(Circle(self.distances[x], self.distances[x], True))
+            for i in range(100):
                 # example
-                t.append(Circle(20, 200))
+                t.append(Circle(random.randint(0, 1000), random.randint(0, 1000), False))
 
             self.tasks.append(t)
 
@@ -133,7 +135,6 @@ class Model(object):
 
     def timestamp(self):
         return QtCore.QDateTime.currentDateTime().toString(QtCore.Qt.ISODate)
-
     def debug(self, msg):
         sys.stderr.write(self.timestamp() + ": " + str(msg) + "\n")
 

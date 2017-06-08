@@ -96,9 +96,12 @@ class Model(object):
         self.num_task = 0
         self.tasks = []
 
+        self.setupTasks()
+
     def setupTasks(self):
-        self.tasks.append(Circle(400, 400, 40, True))
-        self.tasks.append(Circle(300, 400))
+        # example circles
+        # self.tasks.append(Circle(400, 400, 40, True))
+        # self.tasks.append(Circle(300, 400))
 
         for x in range(len(self.distances)):
             """
@@ -108,9 +111,16 @@ class Model(object):
             doppelte for schleife um listen in den listen zu erzeugen
             eine liste enthält alle circles für den task und alle diese listen sind in der oberliste
 
+
+            erst den gehighlighteten kreis erstellen
+            dann zufällige kreise erstellen die nicht mim highlight überschneiden
+            vs.
+            immer gleiche kreise erstellen und abhängig von distanz den einen highlighten
+
             """
             t = []
             for i in range(20):
+                # example
                 t.append(Circle(20, 200))
 
             self.tasks.append(t)

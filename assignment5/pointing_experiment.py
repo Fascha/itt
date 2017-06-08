@@ -167,9 +167,7 @@ class Test(QtWidgets.QWidget):
         elif self.current_state == States.TEST:
             self.drawTest(event, qp)
         elif self.current_state == States.END:
-            pass
-
-
+            self.drawEnd(event, qp)
         qp.end()
 
     def mouseMoveEvent(self, e):
@@ -183,6 +181,9 @@ class Test(QtWidgets.QWidget):
             self.current_state = States.TEST
             self.update()
 
+    def drawEnd(self, event, qp):
+        qp.setFont(QtGui.QFont('Helvetica', 32))
+        qp.drawText(event.rect(), QtCore.Qt.AlignCenter, "THANK YOU FOR PARTICIPATING!")
 
     def drawTest(self, event, qp):
         print("drawing test")

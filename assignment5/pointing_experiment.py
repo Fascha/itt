@@ -51,9 +51,27 @@ read config
 
 present multiple targets
 
+let targets don't interfere
+
+target with correct distance (funktioniert iwie noch nicht)
+
+create border around highlighted target
+
 set mouse cursor_start_pos to the middle of the screen after each pause (or provide small target that user has to click in order to continue?)
 
+apply distances multiple times with a different conditions? We could double the target size -> each distance one time with size 20, and each with size 40, counter-balanced
 
+for log file:
+    start timer when mouse is moving,
+    end timer, when target is hit,
+    count errors
+
+    create file with all data(
+        participant id
+        start/end pos of pointer (calculate distance the user had to travel?), 
+        taks completion time, 
+        error rate, 
+        condition)
 
 """
 
@@ -124,8 +142,12 @@ class Model(object):
             """
             t = []
             # zufällige Position im radius um den Startpunkt berechnen 
-            currentTarget = Circle(self.distances[x], self.distances[x], True)
-            t.append(currentTarget)
+            start_position = (500, 500)
+            random_angle = random.random()*2*math.pi
+            current_target_x = start_position[0] + math.cos(random_angle)*self.distances[x]
+            current_target_y = start_position[1] + math.sin(random_angle)*self.distances[x]
+            self.currentTarget = Circle(current_target_x, current_target_y, True)
+            t.append(self.currentTarget)
             for i in range(100):
                 # example
                 t.append(Circle(random.randint(0, 1000), random.randint(0, 1000), False))
@@ -152,6 +174,7 @@ class Model(object):
 
         if distance < target.size/2:
             #  highlighted clicked
+            self.num_task = self.num_task + 1
             return True
         else:
             #  highlighted not clicked
@@ -211,7 +234,10 @@ class Test(QtWidgets.QWidget):
             if hit:
                 # this executes if the position of the mosueclick is within the highlighted circle
                 # QtGui.QCursor.setPos(self.mapToGlobal(QtCore.QPoint(self.start_pos[0], self.start_pos[1])))
-                self.current_state = States.PAUSE
+                if self.model.num_task == len(self.model.tasks):
+                    self.current_state = States.END
+                else:
+                    self.current_state = States.PAUSE
                 pass
             self.update()
 

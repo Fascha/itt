@@ -51,6 +51,8 @@ read config
 
 present multiple targets
 
+set mouse cursor_start_pos to the middle of the screen after each pause (or provide small target that user has to click in order to continue?)
+
 
 
 """
@@ -78,11 +80,11 @@ class States(Enum):
 
 
 class Circle(object):
-    def __init__(self, x, y, hightlighted, size=20):
+    def __init__(self, x, y, highlighted, size=20):
         self.x = x
         self.y = y
         self.size = size
-        self.highlighted = hightlighted
+        self.highlighted = highlighted
 
 
 class Model(object):
@@ -122,7 +124,8 @@ class Model(object):
             """
             t = []
             # zufällige Position im radius um den Startpunkt berechnen 
-            t.append(Circle(self.distances[x], self.distances[x], True))
+            currentTarget = Circle(self.distances[x], self.distances[x], True)
+            t.append(currentTarget)
             for i in range(100):
                 # example
                 t.append(Circle(random.randint(0, 1000), random.randint(0, 1000), False))
@@ -144,24 +147,24 @@ class Model(object):
         check if distance between click and currentTarget circle is smaller than radius of currentTarget circle
 
         pythagoras
+        """
         distance = math.sqrt((target.x - clickX)**2 + (target.y - clickY)**2)
 
         if distance < target.size/2:
-            .......
-            .......
-            highlighted clicked
+            #  highlighted clicked
+            return True
         else:
-            highlighted not clicked
-
-        """
+            #  highlighted not clicked
+            return False
         pass
 
 
 class Test(QtWidgets.QWidget):
 
     def __init__(self, model):
-        super().__init__()
+        super(Test, self).__init__()
         self.model = model
+        self.cursor_start_pos = (500, 500)
         self.initUI()
         self.current_state = States.INSTRUCTIONS
 
@@ -173,7 +176,7 @@ class Test(QtWidgets.QWidget):
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         # setting initial Mouseposition
-        # QtGui.QCursor.setPos(self.mapToGlobal(QtCore.QPoint(self.start_pos[0], self.start_pos[1])))
+        QtGui.QCursor.setPos(self.mapToGlobal(QtCore.QPoint(self.cursor_start_pos[0], self.cursor_start_pos[1])))
         # self.setMouseTracking(True)
 
         self.show()
@@ -186,6 +189,8 @@ class Test(QtWidgets.QWidget):
             self.drawInstructions(event, qp)
         elif self.current_state == States.TEST:
             self.drawTest(event, qp)
+        elif self.current_state == States.PAUSE:
+            self.drawPause(event, qp)
         elif self.current_state == States.END:
             self.drawEnd(event, qp)
         qp.end()
@@ -206,11 +211,15 @@ class Test(QtWidgets.QWidget):
             if hit:
                 # this executes if the position of the mosueclick is within the highlighted circle
                 # QtGui.QCursor.setPos(self.mapToGlobal(QtCore.QPoint(self.start_pos[0], self.start_pos[1])))
+                self.current_state = States.PAUSE
                 pass
             self.update()
 
     def keyPressEvent(self, event):
         if self.current_state == States.INSTRUCTIONS and event.key() == QtCore.Qt.Key_Space:
+            self.current_state = States.TEST
+            self.update()
+        elif self.current_state == States.PAUSE and event.key() == QtCore.Qt.Key_Space:
             self.current_state = States.TEST
             self.update()
 
@@ -228,6 +237,11 @@ class Test(QtWidgets.QWidget):
         qp.drawText(event.rect(), QtCore.Qt.AlignCenter, "POINTING EXPERIMENT\n\n")
         qp.setFont(QtGui.QFont('Helvetica', 16))
         qp.drawText(event.rect(), QtCore.Qt.AlignCenter, "IN THE FOLLOWING SCREENS YOU WILL BE PRESENTED SOME CIRCLES\nPLEASE CLICK THE HIGHLIGHTED CIRCLE")
+
+    def drawPause(self, event, qp):
+        print("drawing pause")
+        qp.setFont(QtGui.QFont('Helvetica', 16))
+        qp.drawText(event.rect(), QtCore.Qt.AlignCenter, "PRESS THE SPACE KEY WHEN YOU ARE READY TO CONTINUE")
 
     def drawBackground(self, event, qp):
         qp.setBrush(QtGui.QColor(22, 200, 22))

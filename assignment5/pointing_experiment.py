@@ -51,7 +51,7 @@ read config     ----DONE----
 
 present multiple targets
 
-center mousecursor on task start
+center mousecursor on task start    ----DONE----
 
 refactor so WIDTH, Height (and Center) are constants    ---DONE---
 
@@ -325,8 +325,7 @@ class Test(QtWidgets.QWidget):
             self.update()
         elif self.current_state == States.PAUSE and event.key() == QtCore.Qt.Key_Space:
             self.current_state = States.TEST
-             # QtGui.QCursor.setPos(self.mapToGlobal(QtCore.QPoint(self.start_pos[0], self.start_pos[1])))
-
+            QtGui.QCursor.setPos(self.mapToGlobal(QtCore.QPoint(self.start_pos[0], self.start_pos[1])))
             self.update()
 
     def drawEnd(self, event, qp):

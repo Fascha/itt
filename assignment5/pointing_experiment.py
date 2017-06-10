@@ -53,7 +53,7 @@ present multiple targets
 
 center mousecursor on task start    ----DONE----
 
-refactor so WIDTH, Height (and Center) are constants    ---DONE---
+refactor so WIDTH, Height (and Center) are constants read from config    ---DONE---
 
 let targets don't overlap (siehe checkIfOverlapping)
 
@@ -167,13 +167,13 @@ class Model(object):
             current_target_x = start_position[0] + math.cos(random_angle)*self.distances[x]
             current_target_y = start_position[1] + math.sin(random_angle)*self.distances[x]
             self.currentTarget = Circle(current_target_x, current_target_y, True)
-            print(self.distances[x], current_target_x, current_target_y)
+            # print(self.distances[x], current_target_x, current_target_y)
             """
             berechne nochmal die distance, weil die targets oft komisch liegen , aber wird richtig ausgegeben
             von der Startposition aus
             """
             distance = (math.sqrt((current_target_x-start_position[0])**2 + (current_target_y-start_position[1])**2))
-            print(distance)
+            # print(distance)
             t.append(self.currentTarget)
 
             for i in range(100):
@@ -200,12 +200,12 @@ class Model(object):
         for target in existingTargets:
             distance = math.sqrt((target.x - newTarget.x)**2 + (target.y - newTarget.y)**2)    
             if distance < (target.size + newTarget.size)*2:
-                print("True", target.x, newTarget.x, distance, target.size, newTarget.size)
+                # print("True", target.x, newTarget.x, distance, target.size, newTarget.size)
                 #  circles are overlapping
                 return True
             else:
                 #  circles are not overlapping
-                print("False", target.x, newTarget.x, distance, target.size, newTarget.size)
+                # print("False", target.x, newTarget.x, distance, target.size, newTarget.size)
                 return False
 
     def currentTask(self):
@@ -253,7 +253,8 @@ class Model(object):
             #  highlighted not clicked
             self.num_error += 1
             return False
-        pass
+
+
 
 
 class Test(QtWidgets.QWidget):
@@ -275,7 +276,7 @@ class Test(QtWidgets.QWidget):
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         # setting initial Mouseposition
-        QtGui.QCursor.setPos(self.mapToGlobal(QtCore.QPoint(self.cursor_start_pos[0], self.cursor_start_pos[1])))
+        self.centerCursor()
         self.setMouseTracking(True)
 
         self.show()
@@ -311,7 +312,6 @@ class Test(QtWidgets.QWidget):
             hit = self.model.checkHit(self.currentTarget, ev.x(), ev.y())
             if hit:
                 # this executes if the position of the mosueclick is within the highlighted circle
-                # QtGui.QCursor.setPos(self.mapToGlobal(QtCore.QPoint(self.start_pos[0], self.start_pos[1])))
                 if self.model.num_task == len(self.model.tasks):
                     self.current_state = States.END
                 else:
@@ -325,7 +325,7 @@ class Test(QtWidgets.QWidget):
             self.update()
         elif self.current_state == States.PAUSE and event.key() == QtCore.Qt.Key_Space:
             self.current_state = States.TEST
-            QtGui.QCursor.setPos(self.mapToGlobal(QtCore.QPoint(self.start_pos[0], self.start_pos[1])))
+            self.centerCursor()
             self.update()
 
     def drawEnd(self, event, qp):
@@ -364,6 +364,10 @@ class Test(QtWidgets.QWidget):
 
             qp.drawEllipse(x-size/2, y-size/2, size, size)
 
+    def centerCursor(self):
+        QtGui.QCursor.setPos(self.mapToGlobal(QtCore.QPoint(self.cursor_start_pos[0], self.cursor_start_pos[1])))
+
+
 
 def main():
 
@@ -377,7 +381,7 @@ def main():
         # sys.argv[0] is name of the script
         sys.stderr.write("Usage: {} <setup file>\n".format(sys.argv[0]))
         sys.exit(1)
-    print(read_config(sys.argv[1]))
+    # print(read_config(sys.argv[1]))
 
     model = Model(*read_config(sys.argv[1]))
     test = Test(model)
@@ -410,10 +414,16 @@ def read_config(filename):
 
     config = config['POINTING EXPERIMENT']
 
+    window_width = int(config['window_width']) if config['window_width'] else 999
+    window_height = int(config['window_height']) if config['window_height'] else 999
+
+    print('width', window_width)
+    print('height', window_height)
+
     if config['user'] and config['widths'] and config['distances']:
         widths = [int(x) for x in config['widths'].split(",")]
         distances = [int(x) for x in config['distances'].split(",")]
-        return config['user'], widths, distances
+        return config['user'], widths, distances, window_width, window_height
     else:
         print("Error: wrong file format.")
 

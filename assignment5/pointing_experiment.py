@@ -51,23 +51,23 @@ read config
 
 present multiple targets
 
-let targets don't interfere
+let targets don't overlap (siehe checkIfOverlapping)
 
-target with correct distance (funktioniert iwie noch nicht richtig)
+target with correct distance (siehe setuptasks)
 
-create border around highlighted target
+create border around highlighted target (passiert schon in checkifoverlapping)
 
 set mouse cursor_start_pos to the middle of the screen after each pause (or provide small target that user has to click in order to continue?)
 
-apply distances multiple times with a different conditions? We could double the target size -> each distance one time with size 20, and each with size 40
+apply distances multiple times with different conditions? We could double the target size -> each distance one time with size 20, and each with size 40
 
-create_config:
-    Größe und Reihenfolge von Abständen pseudo randomisieren
+
+Größe und Reihenfolge von Abständen pseudo randomisieren in create config oder in dem python File?
 
 for log file:
-    start timer when mouse is moving,
+    start timer when mouse is moving ,
     end timer, when target is hit,
-    count errors
+    count errors (wird auf stdout ausgegeben)
 
     create file with all data(
         participant id
@@ -75,6 +75,8 @@ for log file:
         taks completion time, 
         error rate, 
         condition)
+
+add new pointing technique, bubble cursor around cursor.. new file?
 
 """
 
@@ -149,22 +151,55 @@ class Model(object):
             t = []
             # zufällige Position im radius um den Startpunkt berechnen 
             start_position = (500, 500)
+            """
+            Position von current target im Radius(distance) um Startposition.
+            random.random() vllt nicht richtig?
+        
+            """
             random_angle = random.random()*2*math.pi
             current_target_x = start_position[0] + math.cos(random_angle)*self.distances[x]
             current_target_y = start_position[1] + math.sin(random_angle)*self.distances[x]
             self.currentTarget = Circle(current_target_x, current_target_y, True)
             print(self.distances[x], current_target_x, current_target_y)
+            """
+            berechne nochmal die distance, weil die targets oft komisch liegen , aber wird richtig ausgegeben
+            von der Startposition aus
+            """
             distance = (math.sqrt((current_target_x-start_position[0])**2 + (current_target_y-start_position[1])**2))
             print(distance)
             t.append(self.currentTarget)
+
             for i in range(100):
-                # example
                 random_x = random.randint(0,1000)
                 random_y = random.randint(0,1000)
-                # if ((random_x - (current_target_x)**2) + (random_y - (current_target_y)**2)) > self.distances[x]**2:
-                t.append(Circle(random_x, random_y, False))
+                newTarget = Circle(random_x, random_y, False)
+                
+                #check if new target is overlapping with existing targets
+                if not self.checkIfOverlapping(t, newTarget):
+                    t.append(newTarget)
+                elif self.checkIfOverlapping(t, newTarget):
+                    pass
 
             self.tasks.append(t)
+
+    def checkIfOverlapping(self, existingTargets, newTarget):
+        """
+        durchläuft nur erstes existingtarget (rotes) -> dies wird dann von anderen nicht überlappt, 
+        aber manche schwarze werden von anderen schwarzen  schon überlappt, 
+        obwohl eigtl alle durchlaufen werden sollten in der forschleife?
+        die Größe von existingTargets wird auch größer..
+        Sollte eigtl jedes newTarget mit den bereits bestehenden targets auf Überschneidungen überprüfen..
+        """
+        for target in existingTargets:
+            distance = math.sqrt((target.x - newTarget.x)**2 + (target.y - newTarget.y)**2)    
+            if distance < (target.size + newTarget.size)*2:
+                print("True", target.x, newTarget.x, distance, target.size, newTarget.size)
+                #  circles are overlapping
+                return True
+            else:
+                #  circles are not overlapping
+                print("False", target.x, newTarget.x, distance, target.size, newTarget.size)
+                return False
 
     def currentTask(self):
 
@@ -191,9 +226,8 @@ class Model(object):
             return -1
 
     def create_log(self, timeontask):
-        print(timeontask, self.num_error)
+        print("%s; %s; %d; %d; %d;" % (self.timestamp(), self.user_id, self.num_task, timeontask, self.num_error))
         self.num_error = 0
-
 
     def checkHit(self, target, clickX, clickY):
         """

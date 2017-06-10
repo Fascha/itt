@@ -53,13 +53,16 @@ present multiple targets
 
 let targets don't interfere
 
-target with correct distance (funktioniert iwie noch nicht)
+target with correct distance (funktioniert iwie noch nicht richtig)
 
 create border around highlighted target
 
 set mouse cursor_start_pos to the middle of the screen after each pause (or provide small target that user has to click in order to continue?)
 
-apply distances multiple times with a different conditions? We could double the target size -> each distance one time with size 20, and each with size 40, counter-balanced
+apply distances multiple times with a different conditions? We could double the target size -> each distance one time with size 20, and each with size 40
+
+create_config:
+    Größe und Reihenfolge von Abständen pseudo randomisieren
 
 for log file:
     start timer when mouse is moving,
@@ -115,6 +118,9 @@ class Model(object):
         self.repetitions = repetitions
         self.num_task = 0
         self.tasks = []
+        self.num_error = 0
+
+        self.mouse_moving = False
 
         self.currentTarget = None
 
@@ -147,10 +153,16 @@ class Model(object):
             current_target_x = start_position[0] + math.cos(random_angle)*self.distances[x]
             current_target_y = start_position[1] + math.sin(random_angle)*self.distances[x]
             self.currentTarget = Circle(current_target_x, current_target_y, True)
+            print(self.distances[x], current_target_x, current_target_y)
+            distance = (math.sqrt((current_target_x-start_position[0])**2 + (current_target_y-start_position[1])**2))
+            print(distance)
             t.append(self.currentTarget)
             for i in range(100):
                 # example
-                t.append(Circle(random.randint(0, 1000), random.randint(0, 1000), False))
+                random_x = random.randint(0,1000)
+                random_y = random.randint(0,1000)
+                # if ((random_x - (current_target_x)**2) + (random_y - (current_target_y)**2)) > self.distances[x]**2:
+                t.append(Circle(random_x, random_y, False))
 
             self.tasks.append(t)
 
@@ -160,8 +172,28 @@ class Model(object):
 
     def timestamp(self):
         return QtCore.QDateTime.currentDateTime().toString(QtCore.Qt.ISODate)
+
     def debug(self, msg):
-        sys.stderr.write(self.timestamp() + ": " + str(msg) + "\n")
+        sys.stderr.write(self.timestamp() + ": " + str(msg) + "\n")    
+    
+    def start_measurement(self):
+        if not self.mouse_moving:
+            self.timer.start()
+            self.mouse_moving = True
+
+    def stop_measurement(self):
+        if self.mouse_moving:
+            timeontask = self.timer.elapsed()
+            self.mouse_moving = False
+            return timeontask
+        else:
+            self.debug("not running")
+            return -1
+
+    def create_log(self, timeontask):
+        print(timeontask, self.num_error)
+        self.num_error = 0
+
 
     def checkHit(self, target, clickX, clickY):
         """
@@ -174,10 +206,12 @@ class Model(object):
 
         if distance < target.size/2:
             #  highlighted clicked
-            self.num_task = self.num_task + 1
+            self.num_task += 1
+            self.create_log(self.stop_measurement())
             return True
         else:
             #  highlighted not clicked
+            self.num_error += 1
             return False
         pass
 
@@ -200,7 +234,7 @@ class Test(QtWidgets.QWidget):
 
         # setting initial Mouseposition
         QtGui.QCursor.setPos(self.mapToGlobal(QtCore.QPoint(self.cursor_start_pos[0], self.cursor_start_pos[1])))
-        # self.setMouseTracking(True)
+        self.setMouseTracking(True)
 
         self.show()
 
@@ -224,6 +258,8 @@ class Test(QtWidgets.QWidget):
         (setter method needs to be called)
 
         """
+        if e.type() == QtCore.QEvent.MouseMove:
+            self.model.start_measurement()
         pass
 
     def mousePressEvent(self, ev):

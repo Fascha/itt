@@ -47,9 +47,13 @@ Points
 
 TODO
 
-read config
+read config     ----DONE----
 
 present multiple targets
+
+center mousecursor on task start
+
+refactor so WIDTH, Height (and Center) are constants    ---DONE---
 
 let targets don't overlap (siehe checkIfOverlapping)
 
@@ -88,11 +92,12 @@ DISTANCES: 170, 300, 450, 700
 #!/usr/bin/python3
 
 
-import sys
-from PyQt5 import QtGui, QtWidgets, QtCore
-from enum import Enum
 import configparser
-import math, random
+from enum import Enum
+import math
+from PyQt5 import QtGui, QtWidgets, QtCore
+import random
+import sys
 
 
 class States(Enum):
@@ -112,11 +117,13 @@ class Circle(object):
 
 class Model(object):
 
-    def __init__(self, user_id, sizes, distances, repetitions=4):
+    def __init__(self, user_id, sizes, distances, window_width, window_height, repetitions=4):
         self.timer = QtCore.QTime()
         self.user_id = user_id
         self.sizes = sizes
         self.distances = distances
+        self.window_width = window_width
+        self.window_height = window_height
         self.repetitions = repetitions
         self.num_task = 0
         self.tasks = []
@@ -150,7 +157,7 @@ class Model(object):
             """
             t = []
             # zufällige Position im radius um den Startpunkt berechnen 
-            start_position = (500, 500)
+            start_position = (self.window_width/2, self.window_height/2)
             """
             Position von current target im Radius(distance) um Startposition.
             random.random() vllt nicht richtig?
@@ -170,8 +177,8 @@ class Model(object):
             t.append(self.currentTarget)
 
             for i in range(100):
-                random_x = random.randint(0,1000)
-                random_y = random.randint(0,1000)
+                random_x = random.randint(0, self.window_width)
+                random_y = random.randint(0, self.window_height)
                 newTarget = Circle(random_x, random_y, False)
                 
                 #check if new target is overlapping with existing targets
@@ -202,7 +209,6 @@ class Model(object):
                 return False
 
     def currentTask(self):
-
         return self.tasks[self.num_task]
 
     def timestamp(self):
@@ -252,17 +258,19 @@ class Model(object):
 
 class Test(QtWidgets.QWidget):
 
+    WIDTH = 1000
+    HEIGHT = 1000
+
     def __init__(self, model):
         super(Test, self).__init__()
         self.model = model
-        self.cursor_start_pos = (500, 500)
+        self.cursor_start_pos = (self.WIDTH/2, self.HEIGHT/2)
         self.initUI()
         self.current_state = States.INSTRUCTIONS
 
     def initUI(self):
-
         # setGeometry(int posx, int posy, int w, int h)
-        self.setGeometry(0, 0, 1000, 1000)
+        self.setGeometry(0, 0, self.WIDTH, self.HEIGHT)
         self.setWindowTitle('Pointing Experiment')
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
@@ -317,6 +325,8 @@ class Test(QtWidgets.QWidget):
             self.update()
         elif self.current_state == States.PAUSE and event.key() == QtCore.Qt.Key_Space:
             self.current_state = States.TEST
+             # QtGui.QCursor.setPos(self.mapToGlobal(QtCore.QPoint(self.start_pos[0], self.start_pos[1])))
+
             self.update()
 
     def drawEnd(self, event, qp):

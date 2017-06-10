@@ -47,17 +47,28 @@ Points
 
 TODO
 
+Zu klärende Fragen:
+nicht gehighlightete kreie immer so groß wie gehighlightet oder feste/zufällige größe?
+anzahl der ablenkungskreise festlegen
+
+
+TASKS:
 read config     ----DONE----
 
-present multiple targets
+present multiple targets    ----DONE----
 
 center mousecursor on task start    ----DONE----
 
 refactor so WIDTH, Height (and Center) are constants read from config    ---DONE---
 
-let targets don't overlap (siehe checkIfOverlapping)
+pseudo randomizing the order
 
-target with correct distance (siehe setuptasks)
+let targets don't overlap (siehe checkIfOverlapping)    ---DONE---
+
+target with correct distance (siehe setuptasks)     ---DONE---
+
+beim erstellen eines zufälligen kreises den radius des kreises von x und y abziehen
+statt random.randint(0, self.window_width) => random_x = random.randint(size, self.window_width-size)
 
 create border around highlighted target (passiert schon in checkifoverlapping)
 
@@ -161,6 +172,7 @@ class Model(object):
             t = []
             # zufällige Position im radius um den Startpunkt berechnen 
             start_position = (self.window_width/2, self.window_height/2)
+
             """
             Position von current target im Radius(distance) um Startposition.
             random.random() vllt nicht richtig?
@@ -169,28 +181,63 @@ class Model(object):
             random_angle = random.random()*2*math.pi
             current_target_x = start_position[0] + math.cos(random_angle)*self.distances[x]
             current_target_y = start_position[1] + math.sin(random_angle)*self.distances[x]
+
             self.currentTarget = Circle(current_target_x, current_target_y, True)
+
             # print(self.distances[x], current_target_x, current_target_y)
             """
             berechne nochmal die distance, weil die targets oft komisch liegen , aber wird richtig ausgegeben
             von der Startposition aus
             """
-            distance = (math.sqrt((current_target_x-start_position[0])**2 + (current_target_y-start_position[1])**2))
-            # print(distance)
+
+            distance = math.sqrt((current_target_x-start_position[0])**2 + (current_target_y-start_position[1])**2)
+
+            """
+            a = self.currentTarget.x - start_position[0]
+            b = self.currentTarget.y - start_position[1]
+
+            print('a = ', a)
+            print('b = ', b)
+
+            print('apow = ', a**2)
+            print('bpow = ', b**2)
+
+            d = math.sqrt(a**2 + b**2)
+            print('d = ', d)
+
+            """
+
+            print('distance = ', distance)
             t.append(self.currentTarget)
 
-            for i in range(100):
+            for i in range(500):
+                """
                 random_x = random.randint(0, self.window_width)
                 random_y = random.randint(0, self.window_height)
                 newTarget = Circle(random_x, random_y, False)
-                
+
                 #check if new target is overlapping with existing targets
                 if not self.checkIfOverlapping(t, newTarget):
                     t.append(newTarget)
                 elif self.checkIfOverlapping(t, newTarget):
                     pass
+                """
+
+                # solange True returned wird wird ein neuer kreis erzeugt!
+                # counter mitlaufen lassen um endlosschleife(wenn nicht mehr genug platz) zu vermeiden
+                newTarget = self.createRandomCircle()
+
+                while self.checkIfOverlapping(t, newTarget):
+                    newTarget = self.createRandomCircle()
+
+                t.append(newTarget)
 
             self.tasks.append(t)
+
+    def createRandomCircle(self):
+        random_x = random.randint(25, self.window_width - 25)
+        random_y = random.randint(25, self.window_height - 25)
+        return Circle(random_x, random_y, False)
 
     def checkIfOverlapping(self, existingTargets, newTarget):
         """
@@ -199,17 +246,27 @@ class Model(object):
         obwohl eigtl alle durchlaufen werden sollten in der forschleife?
         die Größe von existingTargets wird auch größer..
         Sollte eigtl jedes newTarget mit den bereits bestehenden targets auf Überschneidungen überprüfen..
+
+
+        alle bisherigen targets durchgehen
+               falls distanz kleiner als durchmesser/radius beider zusammen ist muss true returend werden.
+               => es muss ein neuer zufälliger kreis erzeugt werden
         """
         for target in existingTargets:
             distance = math.sqrt((target.x - newTarget.x)**2 + (target.y - newTarget.y)**2)    
-            if distance < (target.size + newTarget.size)*2:
+
+            # wieso *2 und nicht /2?
+            if distance < (target.size + newTarget.size)/2:
+            # if distance < (target.size + newTarget.size)*2:
                 # print("True", target.x, newTarget.x, distance, target.size, newTarget.size)
                 #  circles are overlapping
                 return True
-            else:
+            # else:
                 #  circles are not overlapping
                 # print("False", target.x, newTarget.x, distance, target.size, newTarget.size)
-                return False
+                # return False
+        # falls loop komplett durchläuft erst False returnen!
+        return False
 
     def currentTask(self):
         return self.tasks[self.num_task]
@@ -240,7 +297,6 @@ class Model(object):
 
     def checkHit(self, target, clickX, clickY):
         """
-
         check if distance between click and currentTarget circle is smaller than radius of currentTarget circle
 
         pythagoras
@@ -262,19 +318,17 @@ class Model(object):
 
 class Test(QtWidgets.QWidget):
 
-    WIDTH = 1000
-    HEIGHT = 1000
-
     def __init__(self, model):
         super(Test, self).__init__()
         self.model = model
-        self.cursor_start_pos = (self.WIDTH/2, self.HEIGHT/2)
+
+        self.cursor_start_pos = (self.model.window_width/2, self.model.window_height/2)
         self.initUI()
         self.current_state = States.INSTRUCTIONS
 
     def initUI(self):
         # setGeometry(int posx, int posy, int w, int h)
-        self.setGeometry(0, 0, self.WIDTH, self.HEIGHT)
+        self.setGeometry(0, 0, self.model.window_width, self.model.window_height)
         self.setWindowTitle('Pointing Experiment')
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
@@ -345,6 +399,7 @@ class Test(QtWidgets.QWidget):
         qp.drawText(event.rect(), QtCore.Qt.AlignCenter, "POINTING EXPERIMENT\n\n")
         qp.setFont(QtGui.QFont('Helvetica', 16))
         qp.drawText(event.rect(), QtCore.Qt.AlignCenter, "IN THE FOLLOWING SCREENS YOU WILL BE PRESENTED SOME CIRCLES\nPLEASE CLICK THE HIGHLIGHTED CIRCLE")
+        self.centerCursor()
 
     def drawPause(self, event, qp):
         print("drawing pause")
@@ -356,6 +411,9 @@ class Test(QtWidgets.QWidget):
         qp.drawRect(event.rect())
 
     def drawCircles(self, event, qp):
+        # drawin rect at centerof the screen around the cursor
+        qp.drawRect(self.model.window_width/2-5, self.model.window_height/2-5, 10, 10)
+
         for circle in self.model.currentTask():
             x, y, size, highlighted = circle.x, circle.y, circle.size, circle.highlighted
 

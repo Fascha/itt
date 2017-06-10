@@ -85,9 +85,12 @@ add new pointing technique, bubble cursor around cursor.. new file?
 """
 
 """ setup file looks like this:
-USER: 1
-WIDTHS: 35, 60, 100, 170
-DISTANCES: 170, 300, 450, 700
+[POINTING EXPERIMENT]
+user = 1
+window_height = 1000
+widths = 30, 50, 60, 70
+distances = 100, 200, 300, 400
+window_width = 1000
 """
 #!/usr/bin/python3
 

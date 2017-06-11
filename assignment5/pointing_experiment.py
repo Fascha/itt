@@ -57,7 +57,7 @@ read config     ----DONE----
 
 present multiple targets    ----DONE----
 
-center mousecursor on task start    ----DONE----
+center mousecursor on task start    ----DONE----  manchmal doppelcursor
 
 refactor so WIDTH, Height (and Center) are constants read from config    ---DONE---
 
@@ -112,6 +112,9 @@ import math
 from PyQt5 import QtGui, QtWidgets, QtCore
 import random
 import sys
+import csv
+import os
+from collections import OrderedDict
 
 
 class States(Enum):
@@ -148,6 +151,7 @@ class Model(object):
         self.currentTarget = None
 
         self.setupTasks()
+        self.logging_list = []
 
     def setupTasks(self):
         # example circles
@@ -255,7 +259,7 @@ class Model(object):
         for target in existingTargets:
             distance = math.sqrt((target.x - newTarget.x)**2 + (target.y - newTarget.y)**2)    
 
-            # wieso *2 und nicht /2?
+            # wieso *2 und nicht /2?   --> war nur zum ausprobieren, wei lich rausfinden wollte worans liegt..
             if distance < (target.size + newTarget.size)/2:
             # if distance < (target.size + newTarget.size)*2:
                 # print("True", target.x, newTarget.x, distance, target.size, newTarget.size)
@@ -293,7 +297,43 @@ class Model(object):
 
     def create_log(self, timeontask):
         print("%s; %s; %d; %d; %d;" % (self.timestamp(), self.user_id, self.num_task, timeontask, self.num_error))
+        logging_dict = OrderedDict([
+            ('timestamp', self.timestamp()),
+            ('id', self.user_id),
+            ('num_task', self.num_task),
+            ('target_distance', self.distances[self.num_task]),
+            ('target_size', self.currentTarget.size),
+            # check if pointer is with or without bubble
+            ('bubble_pointer', False),
+            ('reaction_time', timeontask),
+            ('number_of_errors', self.num_error)
+        ])
+        self.logging_list.append(logging_dict)
+        # reset errors
+        self.writeLogToFile()
         self.num_error = 0
+
+    def writeLogToFile(self):
+        filepath_total = 'pointing_experiment_results.csv'
+        filepath = 'pointing_experiment_result_' + str(self.user_id) + '.csv'
+
+        # checking if file with all experiments exists
+        log_file_exists = os.path.isfile(filepath_total)
+
+        # appending to the concatenated file
+        with open(filepath_total, 'a') as f:
+            writer = csv.DictWriter(f, list(self.logging_list[0].keys()))
+
+            if not log_file_exists:
+                writer.writeheader()
+                writer.writerows(self.logging_list)
+        # writing to a separate file
+        with open(filepath, 'w') as f:
+            writer = csv.DictWriter(f, list(self.logging_list[0].keys()))
+            writer.writeheader()
+            writer.writerows(self.logging_list)
+
+
 
     def checkHit(self, target, clickX, clickY):
         """
@@ -405,6 +445,7 @@ class Test(QtWidgets.QWidget):
         print("drawing pause")
         qp.setFont(QtGui.QFont('Helvetica', 16))
         qp.drawText(event.rect(), QtCore.Qt.AlignCenter, "PRESS THE SPACE KEY WHEN YOU ARE READY TO CONTINUE")
+        self.centerCursor()
 
     def drawBackground(self, event, qp):
         qp.setBrush(QtGui.QColor(22, 200, 22))

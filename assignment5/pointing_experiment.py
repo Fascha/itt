@@ -311,7 +311,9 @@ class Model(object):
         ])
         self.logging_list.append(logging_dict)
         # reset errors
-        self.writeLogToFile()
+        # only writing on exits!
+        # alternatively we coudk write after each task
+        # self.writeLogToFile()
         self.num_error = 0
 
     def writeLogToFile(self):
@@ -485,6 +487,10 @@ class Test(QtWidgets.QWidget):
         QtGui.QCursor.setPos(self.mapToGlobal(QtCore.QPoint(self.cursor_start_pos[0], self.cursor_start_pos[1])))
 
 
+    def closeEvent(self, event):
+        # checking if log was already written when you close the pyqt app
+        if self.model.num_task > 0:
+            self.model.writeLogToFile()
 
 def main():
 

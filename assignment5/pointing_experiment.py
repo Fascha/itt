@@ -301,6 +301,7 @@ class Model(object):
             ('timestamp', self.timestamp()),
             ('id', self.user_id),
             ('num_task', self.num_task),
+            # error list index out of range
             ('target_distance', self.distances[self.num_task]),
             ('target_size', self.currentTarget.size),
             # check if pointer is with or without bubble
@@ -345,15 +346,14 @@ class Model(object):
 
         if distance < target.size/2:
             #  highlighted clicked
+            self.create_log(self.stop_measurement())      
+            # increase task after logging!!
             self.num_task += 1
-            self.create_log(self.stop_measurement())
             return True
         else:
             #  highlighted not clicked
             self.num_error += 1
             return False
-
-
 
 
 class Test(QtWidgets.QWidget):
@@ -373,7 +373,7 @@ class Test(QtWidgets.QWidget):
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         # setting initial Mouseposition
-        self.centerCursor()
+        # self.centerCursor()
         self.setMouseTracking(True)
 
         self.show()
@@ -405,25 +405,39 @@ class Test(QtWidgets.QWidget):
     def mousePressEvent(self, ev):
         # see model.checkHit!!
         if ev.button() == QtCore.Qt.LeftButton:
-
             hit = self.model.checkHit(self.currentTarget, ev.x(), ev.y())
             if hit:
                 # this executes if the position of the mosueclick is within the highlighted circle
-                if self.model.num_task == len(self.model.tasks):
+                print("in hit")
+                print(self.model.num_task)
+                print(len(self.model.tasks))
+                if self.model.num_task >= len(self.model.tasks):
                     self.current_state = States.END
                 else:
                     self.current_state = States.PAUSE
-                pass
+                # pass
             self.update()
 
     def keyPressEvent(self, event):
+
+        if event.key() == QtCore.Qt.Key_Space:
+            # doppelte if-Abfrage notwendig?
+            if self.current_state == States.INSTRUCTIONS:
+                self.current_state = States.TEST
+            elif self.current_state == States.PAUSE:
+                self.current_state = States.TEST
+            self.centerCursor()
+            self.update()
+
+        """
         if self.current_state == States.INSTRUCTIONS and event.key() == QtCore.Qt.Key_Space:
             self.current_state = States.TEST
             self.update()
         elif self.current_state == States.PAUSE and event.key() == QtCore.Qt.Key_Space:
             self.current_state = States.TEST
-            self.centerCursor()
+            # self.centerCursor()
             self.update()
+        """
 
     def drawEnd(self, event, qp):
         qp.setFont(QtGui.QFont('Helvetica', 32))
@@ -439,7 +453,7 @@ class Test(QtWidgets.QWidget):
         qp.drawText(event.rect(), QtCore.Qt.AlignCenter, "POINTING EXPERIMENT\n\n")
         qp.setFont(QtGui.QFont('Helvetica', 16))
         qp.drawText(event.rect(), QtCore.Qt.AlignCenter, "IN THE FOLLOWING SCREENS YOU WILL BE PRESENTED SOME CIRCLES\nPLEASE CLICK THE HIGHLIGHTED CIRCLE")
-        self.centerCursor()
+        # self.centerCursor()
 
     def drawPause(self, event, qp):
         print("drawing pause")
@@ -453,6 +467,7 @@ class Test(QtWidgets.QWidget):
 
     def drawCircles(self, event, qp):
         # drawin rect at centerof the screen around the cursor
+        # self.centerCursor()
         qp.drawRect(self.model.window_width/2-5, self.model.window_height/2-5, 10, 10)
 
         for circle in self.model.currentTask():

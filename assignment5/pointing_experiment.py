@@ -292,7 +292,7 @@ class Model(object):
             ('id', self.user_id),
             ('num_task', self.num_task),
             ('target_distance', self.distances[self.num_task]),
-            ('target_size', self.currentTarget.size),
+            ('target_size', self.sizes[self.num_task]),
             # check if pointer is with or without bubble
             ('bubble_pointer', False),
             ('reaction_time', timeontask),
@@ -335,8 +335,8 @@ class Model(object):
 
         if distance < target.size/2:
             #  highlighted clicked
-            self.num_task += 1
             self.create_log(self.stop_measurement())
+            self.num_task += 1
             return True
         else:
             #  highlighted not clicked
@@ -400,8 +400,10 @@ class Test(QtWidgets.QWidget):
             if hit:
                 # this executes if the position of the mosueclick is within the highlighted circle
                 if self.model.num_task == len(self.model.tasks):
+                    print(self.model.num_task, len(self.model.tasks))
                     self.current_state = States.END
                 else:
+                    print(self.model.num_task, len(self.model.tasks))
                     self.current_state = States.PAUSE
                 pass
             self.update()

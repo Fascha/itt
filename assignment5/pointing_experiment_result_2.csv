@@ -1,0 +1,5 @@
+timestamp,id,num_task,target_distance,target_size,bubble_pointer,reaction_time,number_of_errors
+2017-06-12T12:52:40,2,0,150,15,False,2553,0
+2017-06-12T12:52:42,2,1,350,30,False,1509,0
+2017-06-12T12:52:45,2,2,250,30,False,2311,0
+2017-06-12T12:52:47,2,3,50,15,False,1429,0

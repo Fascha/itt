@@ -6,7 +6,7 @@ config = configparser.ConfigParser()
 
 number_participants = 4
 number_repetitions = 4
-distances = ['100', '200', '300', '400']
+distances = ['50', '150', '250', '350']
 widths = ['15', '30']
 widths.extend(widths)
 
@@ -15,8 +15,8 @@ for i in range(number_participants):
     config['POINTING EXPERIMENT'] = {'USER': 1,
                                  'WIDTHS': '30, 50, 60, 70',
                                  'DISTANCES': '100, 200, 300, 400',
-                                 'WINDOW_WIDTH': 1000,
-                                 'WINDOW_HEIGHT': 1000}
+                                 'WINDOW_WIDTH': 800,
+                                 'WINDOW_HEIGHT': 800}
 
     config['POINTING EXPERIMENT']['USER'] = str(i)
 

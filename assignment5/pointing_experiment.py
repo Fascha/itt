@@ -121,10 +121,11 @@ class States(Enum):
 
 
 class Circle(object):
-    def __init__(self, x, y, highlighted, size):
+    def __init__(self, x, y, size, target=False, highlighted=False):
         self.x = x
         self.y = y
         self.size = size
+        self.target = target
         self.highlighted = highlighted
 
 
@@ -159,7 +160,6 @@ class Model(object):
 
         for x in range(len(self.distances)):
             """
-
             random oder mit gewissen algorithmus?
 
             doppelte for schleife um listen in den listen zu erzeugen
@@ -179,31 +179,14 @@ class Model(object):
             current_target_x = self.cursor_start_pos[0] + math.cos(random_angle)*self.distances[x]
             current_target_y = self.cursor_start_pos[1] + math.sin(random_angle)*self.distances[x]
 
-            self.currentTarget = Circle(current_target_x, current_target_y, True, self.sizes[x])
-
-            # print(self.distances[x], current_target_x, current_target_y)
+            self.currentTarget = Circle(current_target_x, current_target_y, self.sizes[x], target=True)
 
             distance = math.sqrt((current_target_x-self.cursor_start_pos[0])**2 + (current_target_y-self.cursor_start_pos[1])**2)
-
-            """
-            a = self.currentTarget.x - start_position[0]
-            b = self.currentTarget.y - start_position[1]
-
-            print('a = ', a)
-            print('b = ', b)
-
-            print('apow = ', a**2)
-            print('bpow = ', b**2)
-
-            d = math.sqrt(a**2 + b**2)
-            print('d = ', d)
-
-            """
 
             print('distance = ', distance)
             t.append(self.currentTarget)
 
-            for i in range(50):
+            for i in range(10):
                 """
                 random_x = random.randint(0, self.window_width)
                 random_y = random.randint(0, self.window_height)
@@ -230,7 +213,7 @@ class Model(object):
     def createRandomCircle(self):
         random_x = random.randint(self.currentTarget.size/2, self.window_width - self.currentTarget.size/2)
         random_y = random.randint(self.currentTarget.size/2, self.window_height - self.currentTarget.size/2)
-        return Circle(random_x, random_y, False, self.currentTarget.size)
+        return Circle(random_x, random_y, self.currentTarget.size)
 
 
     def checkIfOverlapping(self, existingTargets, newTarget):
@@ -462,13 +445,16 @@ class Test(QtWidgets.QWidget):
         qp.drawRect(self.model.window_width/2-5, self.model.window_height/2-5, 10, 10)
 
         for circle in self.model.currentTask():
-            x, y, size, highlighted = circle.x, circle.y, circle.size, circle.highlighted
+            x, y, size, target, highlighted = circle.x, circle.y, circle.size, circle.target, circle.highlighted
 
-            if highlighted:
-                qp.setBrush(QtGui.QColor(200, 34, 20))
+
+            if target:
+                qp.setBrush(QtGui.QColor(20, 200, 30))
                 self.currentTarget = circle
             else:
-                qp.setBrush(QtGui.QColor(33, 34, 20))
+                qp.setBrush(QtGui.QColor(30, 30, 30))
+            if highlighted:
+                qp.setBrush(QtGui.QColor(200, 30, 20))
 
             qp.drawEllipse(x-size/2, y-size/2, size, size)
 

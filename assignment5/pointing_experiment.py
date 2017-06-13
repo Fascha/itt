@@ -468,7 +468,6 @@ class Test(QtWidgets.QWidget):
             self.model.writeLogToFile()
 
 def main():
-
     # model erstellen
     # test model übergeben
 
@@ -477,9 +476,17 @@ def main():
     # checking if there are command line arguments
     if len(sys.argv) < 2:
         # sys.argv[0] is name of the script
-        sys.stderr.write("Usage: {} <setup file>\n".format(sys.argv[0]))
+        sys.stderr.write("Usage: {} <setup file> [<bubble>]\n".format(sys.argv[0]))
         sys.exit(1)
-    # print(read_config(sys.argv[1]))
+
+
+    if len(sys.argv) == 2:
+        #config ini übergeben
+        pass
+
+    if len(sys.argv) == 3:
+        # bubble übergebe
+        pass
 
     model = Model(*read_config(sys.argv[1]))
     test = Test(model)
@@ -487,26 +494,6 @@ def main():
 
 
 def read_config(filename):
-    # lines = open(filename, 'r').readlines()
-    # if lines[0].startswith("USER:"):
-    #     user_id = lines[0].split(":")[1].strip()
-    # else:
-    #     print("Error: wrong file format.")
-    #
-    # if lines[1].startswith("WIDTHS:"):
-    #     width_string = lines[1].split(":")[1].strip()
-    #     widths = [int(x) for x in width_string.split(",")]
-    # else:
-    #     print("Error: wrong file format.")
-    #
-    # if lines[2].startswith("DISTANCES:"):
-    #     distance_string = lines[2].split(":")[1].strip()
-    #     distances = [int(x) for x in distance_string.split(",")]
-    # else:
-    #     print("Error: wrong file format.")
-    #
-    # return user_id, widths, distances
-
     config = configparser.ConfigParser()
     config.read(filename)
 

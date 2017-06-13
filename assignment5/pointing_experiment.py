@@ -100,8 +100,6 @@ distances = 100, 200, 300, 400
 window_width = 1000
 """
 #!/usr/bin/python3
-
-
 import configparser
 from enum import Enum
 import math
@@ -111,6 +109,10 @@ import sys
 import csv
 import os
 from collections import OrderedDict
+
+"""
+Description
+"""
 
 
 class States(Enum):
@@ -142,15 +144,10 @@ class Model(object):
         self.num_task = 0
         self.tasks = []
         self.num_error = 0
-
         self.mouse_moving = False
-
         self.currentTarget = None
         self.cursor_start_pos = cursor_start_pos
-
         self.setupTasks()
-        
-
         self.logging_list = []
 
     def setupTasks(self):
@@ -173,7 +170,7 @@ class Model(object):
 
             """
             t = []
-            #start_position = (self.window_width/2, self.window_height/2)
+            # start_position = (self.window_width/2, self.window_height/2)
             # random point with distance around starting point
             random_angle = random.random()*2*math.pi
             current_target_x = self.cursor_start_pos[0] + math.cos(random_angle)*self.distances[x]
@@ -181,7 +178,8 @@ class Model(object):
 
             self.currentTarget = Circle(current_target_x, current_target_y, self.sizes[x], target=True)
 
-            distance = math.sqrt((current_target_x-self.cursor_start_pos[0])**2 + (current_target_y-self.cursor_start_pos[1])**2)
+            distance = math.sqrt((current_target_x-self.cursor_start_pos[0])**2 +
+                                 (current_target_y-self.cursor_start_pos[1])**2)
 
             print('distance = ', distance)
             t.append(self.currentTarget)
@@ -215,34 +213,13 @@ class Model(object):
         random_y = random.randint(self.currentTarget.size/2, self.window_height - self.currentTarget.size/2)
         return Circle(random_x, random_y, self.currentTarget.size)
 
-
     def checkIfOverlapping(self, existingTargets, newTarget):
-        """
-        durchläuft nur erstes existingtarget (rotes) -> dies wird dann von anderen nicht überlappt, 
-        aber manche schwarze werden von anderen schwarzen  schon überlappt, 
-        obwohl eigtl alle durchlaufen werden sollten in der forschleife?
-        die Größe von existingTargets wird auch größer..
-        Sollte eigtl jedes newTarget mit den bereits bestehenden targets auf Überschneidungen überprüfen..
-
-
-        alle bisherigen targets durchgehen
-               falls distanz kleiner als durchmesser/radius beider zusammen ist muss true returend werden.
-               => es muss ein neuer zufälliger kreis erzeugt werden
-        """
         for target in existingTargets:
-            distance = math.sqrt((target.x - newTarget.x)**2 + (target.y - newTarget.y)**2)    
-
-            # wieso *2 und nicht /2?   --> war nur zum ausprobieren, wei lich rausfinden wollte worans liegt..
+            # calculate distance of new target and existing target with pythagoras
+            distance = math.sqrt((target.x - newTarget.x)**2 + (target.y - newTarget.y)**2)
+            # return true when distance is smaller
             if distance < (target.size + newTarget.size)/2:
-            # if distance < (target.size + newTarget.size)*2:
-                # print("True", target.x, newTarget.x, distance, target.size, newTarget.size)
-                #  circles are overlapping
                 return True
-            # else:
-                #  circles are not overlapping
-                # print("False", target.x, newTarget.x, distance, target.size, newTarget.size)
-                # return False
-        # falls loop komplett durchläuft erst False returnen!
         return False
 
     def currentTask(self):
@@ -252,8 +229,8 @@ class Model(object):
         return QtCore.QDateTime.currentDateTime().toString(QtCore.Qt.ISODate)
 
     def debug(self, msg):
-        sys.stderr.write(self.timestamp() + ": " + str(msg) + "\n")    
-    
+        sys.stderr.write(self.timestamp() + ": " + str(msg) + "\n")
+
     def start_measurement(self):
         if not self.mouse_moving:
             self.timer.start()
@@ -312,8 +289,6 @@ class Model(object):
             writer = csv.DictWriter(f, list(self.logging_list[0].keys()))
             writer.writeheader()
             writer.writerows(self.logging_list)
-
-
 
     def checkHit(self, target, clickX, clickY):
         """
@@ -427,7 +402,8 @@ class Test(QtWidgets.QWidget):
         qp.setFont(QtGui.QFont('Helvetica', 32))
         qp.drawText(event.rect(), QtCore.Qt.AlignCenter, "POINTING EXPERIMENT\n\n")
         qp.setFont(QtGui.QFont('Helvetica', 16))
-        qp.drawText(event.rect(), QtCore.Qt.AlignCenter, "IN THE FOLLOWING SCREENS YOU WILL BE PRESENTED SOME CIRCLES\nPLEASE CLICK THE HIGHLIGHTED CIRCLE")
+        qp.drawText(event.rect(), QtCore.Qt.AlignCenter,
+                    "IN THE FOLLOWING SCREENS YOU WILL BE PRESENTED SOME CIRCLES\nPLEASE CLICK THE HIGHLIGHTED CIRCLE")
         # self.centerCursor()
 
     def drawPause(self, event, qp):
@@ -447,12 +423,12 @@ class Test(QtWidgets.QWidget):
         for circle in self.model.currentTask():
             x, y, size, target, highlighted = circle.x, circle.y, circle.size, circle.target, circle.highlighted
 
-
             if target:
                 qp.setBrush(QtGui.QColor(20, 200, 30))
                 self.currentTarget = circle
             else:
                 qp.setBrush(QtGui.QColor(30, 30, 30))
+
             if highlighted:
                 qp.setBrush(QtGui.QColor(200, 30, 20))
 
@@ -461,11 +437,11 @@ class Test(QtWidgets.QWidget):
     def centerCursor(self):
         QtGui.QCursor.setPos(self.mapToGlobal(QtCore.QPoint(self.cursor_start_pos[0], self.cursor_start_pos[1])))
 
-
     def closeEvent(self, event):
         # checking if log was already written when you close the pyqt app
         if self.model.num_task > 0:
             self.model.writeLogToFile()
+
 
 def main():
     # model erstellen
@@ -479,9 +455,8 @@ def main():
         sys.stderr.write("Usage: {} <setup file> [<bubble>]\n".format(sys.argv[0]))
         sys.exit(1)
 
-
     if len(sys.argv) == 2:
-        #config ini übergeben
+        # config ini übergeben
         pass
 
     if len(sys.argv) == 3:
@@ -513,6 +488,7 @@ def read_config(filename):
         return config['user'], widths, distances, window_width, window_height, (cursor_start_x, cursor_start_y)
     else:
         print("Error: wrong file format.")
+
 
 if __name__ == '__main__':
     main()

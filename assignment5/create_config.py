@@ -24,7 +24,7 @@ for i in range(number_participants):
 
 
     """
-    
+
     temp_widths = [w[0] for w in combinations]
     temp_distances = [d[1] for d in combinations]
 
@@ -32,12 +32,12 @@ for i in range(number_participants):
     distances_string = ', '.join(temp_distances)
 
     config['POINTING EXPERIMENT'] = {'USER': str(i),
-                                 'WIDTHS': widths_string,
-                                 'DISTANCES': distances_string,
-                                 'CURSOR_START_X': int(WINDOW_WIDTH/2),
-                                 'CURSOR_START_Y': int(WINDOW_HEIGHT/2),
-                                 'WINDOW_WIDTH': int(WINDOW_WIDTH),
-                                 'WINDOW_HEIGHT': int(WINDOW_HEIGHT)}
+                                     'WIDTHS': widths_string,
+                                     'DISTANCES': distances_string,
+                                     'CURSOR_START_X': int(WINDOW_WIDTH/2),
+                                     'CURSOR_START_Y': int(WINDOW_HEIGHT/2),
+                                     'WINDOW_WIDTH': int(WINDOW_WIDTH),
+                                     'WINDOW_HEIGHT': int(WINDOW_HEIGHT)}
 
     """
 

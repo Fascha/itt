@@ -7,8 +7,10 @@ config = configparser.ConfigParser()
 number_participants = 4
 number_repetitions = 4
 distances = ['50', '150', '250', '350']
-widths = ['15', '30', '15', '30']
+widths = ['16', '32', '16', '32']
 
+WINDOW_WIDTH = 800
+WINDOW_HEIGHT = 800
 for i in range(number_participants):
     combinations = []
     for w in widths:
@@ -32,8 +34,10 @@ for i in range(number_participants):
     config['POINTING EXPERIMENT'] = {'USER': str(i),
                                  'WIDTHS': widths_string,
                                  'DISTANCES': distances_string,
-                                 'WINDOW_WIDTH': 800,
-                                 'WINDOW_HEIGHT': 800}
+                                 'CURSOR_START_X': int(WINDOW_WIDTH/2),
+                                 'CURSOR_START_Y': int(WINDOW_HEIGHT/2),
+                                 'WINDOW_WIDTH': int(WINDOW_WIDTH),
+                                 'WINDOW_HEIGHT': int(WINDOW_HEIGHT)}
 
     """
 

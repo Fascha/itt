@@ -61,23 +61,19 @@ center mousecursor on task start    ----DONE----  manchmal doppelcursor
 
 refactor so WIDTH, Height (and Center) are constants read from config    ---DONE---
 
-pseudo randomizing the order
+pseudo randomizing the order    ----DONE----
+COUNTERBALANCING?
 
 let targets don't overlap (siehe checkIfOverlapping)    ---DONE---
 
 target with correct distance (siehe setuptasks)     ---DONE---
 
 beim erstellen eines zufälligen kreises den radius des kreises von x und y abziehen
-statt random.randint(0, self.window_width) => random_x = random.randint(size, self.window_width-size)
+statt random.randint(0, self.window_width) => random_x = random.randint(size, self.window_width-size)  ----DONE---
 
-create border around highlighted target (passiert schon in checkifoverlapping)
+set mouse cursor_start_pos to the middle of the screen after each pause (or provide small target that user has to click in order to continue?)  ----DONE----
 
-set mouse cursor_start_pos to the middle of the screen after each pause (or provide small target that user has to click in order to continue?)
-
-apply distances multiple times with different conditions? We could double the target size -> each distance one time with size 20, and each with size 40
-
-
-Größe und Reihenfolge von Abständen pseudo randomisieren in create config oder in dem python File?
+apply distances multiple times with different conditions? We could double the target size -> each distance one time with size 20, and each with size 40    ----DONE----
 
 for log file:
     start timer when mouse is moving ,
@@ -134,7 +130,7 @@ class Circle(object):
 
 class Model(object):
 
-    def __init__(self, user_id, sizes, distances, window_width, window_height, repetitions=4):
+    def __init__(self, user_id, sizes, distances, window_width, window_height, cursor_start_pos, repetitions=4):
         self.timer = QtCore.QTime()
         self.user_id = user_id
         self.sizes = sizes
@@ -149,8 +145,11 @@ class Model(object):
         self.mouse_moving = False
 
         self.currentTarget = None
+        self.cursor_start_pos = cursor_start_pos
 
         self.setupTasks()
+        
+
         self.logging_list = []
 
     def setupTasks(self):
@@ -174,17 +173,17 @@ class Model(object):
 
             """
             t = []
-            start_position = (self.window_width/2, self.window_height/2)
+            #start_position = (self.window_width/2, self.window_height/2)
             # random point with distance around starting point
             random_angle = random.random()*2*math.pi
-            current_target_x = start_position[0] + math.cos(random_angle)*self.distances[x]
-            current_target_y = start_position[1] + math.sin(random_angle)*self.distances[x]
+            current_target_x = self.cursor_start_pos[0] + math.cos(random_angle)*self.distances[x]
+            current_target_y = self.cursor_start_pos[1] + math.sin(random_angle)*self.distances[x]
 
             self.currentTarget = Circle(current_target_x, current_target_y, True, self.sizes[x])
 
             # print(self.distances[x], current_target_x, current_target_y)
 
-            distance = math.sqrt((current_target_x-start_position[0])**2 + (current_target_y-start_position[1])**2)
+            distance = math.sqrt((current_target_x-self.cursor_start_pos[0])**2 + (current_target_y-self.cursor_start_pos[1])**2)
 
             """
             a = self.currentTarget.x - start_position[0]
@@ -229,9 +228,8 @@ class Model(object):
             self.tasks.append(t)
 
     def createRandomCircle(self):
-        random_x = random.randint(25, self.window_width - 25)
-        random_y = random.randint(25, self.window_height - 25)
-        #return Circle(random_x, random_y, False, 20)
+        random_x = random.randint(self.currentTarget.size/2, self.window_width - self.currentTarget.size/2)
+        random_y = random.randint(self.currentTarget.size/2, self.window_height - self.currentTarget.size/2)
         return Circle(random_x, random_y, False, self.currentTarget.size)
 
 
@@ -287,7 +285,7 @@ class Model(object):
             self.debug("not running")
             return -1
 
-    def create_log(self, timeontask):
+    def create_log(self, timeontask, click):
         print("%s; %s; %d; %d; %d;" % (self.timestamp(), self.user_id, self.num_task, timeontask, self.num_error))
 
         logging_dict = OrderedDict([
@@ -300,7 +298,11 @@ class Model(object):
             # check if pointer is with or without bubble
             ('bubble_pointer', False),
             ('reaction_time', timeontask),
-            ('number_of_errors', self.num_error)
+            ('number_of_errors', self.num_error),
+            ('start_x', self.cursor_start_pos[0]),
+            ('start_y', self.cursor_start_pos[1]),
+            ('click_x', click[0]),
+            ('click_y', click[1]),
         ])
         self.logging_list.append(logging_dict)
         # reset errors
@@ -319,10 +321,9 @@ class Model(object):
         # appending to the concatenated file
         with open(filepath_total, 'a') as f:
             writer = csv.DictWriter(f, list(self.logging_list[0].keys()))
-
             if not log_file_exists:
                 writer.writeheader()
-                writer.writerows(self.logging_list)
+            writer.writerows(self.logging_list)
         # writing to a separate file
         with open(filepath, 'w') as f:
             writer = csv.DictWriter(f, list(self.logging_list[0].keys()))
@@ -341,7 +342,7 @@ class Model(object):
 
         if distance < target.size/2:
             #  highlighted clicked
-            self.create_log(self.stop_measurement())
+            self.create_log(self.stop_measurement(), (clickX, clickY))
             self.num_task += 1
             return True
         else:
@@ -525,8 +526,10 @@ def read_config(filename):
 
     config = config['POINTING EXPERIMENT']
 
-    window_width = int(config['window_width']) if config['window_width'] else 999
-    window_height = int(config['window_height']) if config['window_height'] else 999
+    window_width = int(config['window_width']) if config['window_width'] else 800
+    window_height = int(config['window_height']) if config['window_height'] else 800
+    cursor_start_x = int(config['cursor_start_x']) if config['cursor_start_x'] else 400
+    cursor_start_y = int(config['cursor_start_y']) if config['cursor_start_y'] else 400
 
     print('width', window_width)
     print('height', window_height)
@@ -534,7 +537,7 @@ def read_config(filename):
     if config['user'] and config['widths'] and config['distances']:
         widths = [int(x) for x in config['widths'].split(",")]
         distances = [int(x) for x in config['distances'].split(",")]
-        return config['user'], widths, distances, window_width, window_height
+        return config['user'], widths, distances, window_width, window_height, (cursor_start_x, cursor_start_y)
     else:
         print("Error: wrong file format.")
 

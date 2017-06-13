@@ -1,2 +1,0 @@
-timestamp,id,num_task,target_distance,target_size,bubble_pointer,reaction_time,number_of_errors,start_x,start_y,click_x,click_y
-2017-06-13T17:44:01,2,0,350,32,False,3092,3,400,400,228,701

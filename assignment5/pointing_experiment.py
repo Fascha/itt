@@ -134,19 +134,19 @@ class Circle(object):
 
 class Model(object):
 
-    def __init__(self, user_id, sizes, distances, window_width, window_height, cursor_start_pos, repetitions=4):
+    def __init__(self, user_id, sizes, distances, window_width, window_height, cursor_start_pos, bubble=False):
         self.timer = QtCore.QTime()
         self.user_id = user_id
         self.sizes = sizes
         self.distances = distances
         self.window_width = window_width
         self.window_height = window_height
-        self.repetitions = repetitions
         self.num_task = 0
         self.tasks = []
         self.num_error = 0
         self.mouse_moving = False
         self.currentTarget = None
+        self.bubble = bubble
         self.cursor_start_pos = cursor_start_pos
         self.setupTasks()
         self.logging_list = []
@@ -179,12 +179,12 @@ class Model(object):
 
             self.currentTarget = Circle(current_target_x, current_target_y, self.sizes[x], target=True)
 
-            distance = math.sqrt((current_target_x-self.cursor_start_pos[0])**2 +
-                                 (current_target_y-self.cursor_start_pos[1])**2)
+            # distance = math.sqrt((current_target_x-self.cursor_start_pos[0])**2 +
+            #                      (current_target_y-self.cursor_start_pos[1])**2)
 
             t.append(self.currentTarget)
 
-            for i in range(10):
+            for i in range(50):
                 """
                 random_x = random.randint(0, self.window_width)
                 random_y = random.randint(0, self.window_height)
@@ -256,7 +256,7 @@ class Model(object):
             ('target_distance', self.distances[self.num_task]),
             ('target_size', self.sizes[self.num_task]),
             # check if pointer is with or without bubble
-            ('bubble_pointer', False),
+            ('bubble_pointer', self.bubble),
             ('reaction_time', timeontask),
             ('number_of_errors', self.num_error),
             ('start_x', self.cursor_start_pos[0]),
@@ -265,15 +265,16 @@ class Model(object):
             ('click_y', click[1]),
         ])
         self.logging_list.append(logging_dict)
-        # reset errors
-        # only writing on exits!
-        # alternatively we coudk write after each task
-        # self.writeLogToFile()
         self.num_error = 0
 
     def writeLogToFile(self):
         filepath_total = 'pointing_experiment_results.csv'
-        filepath = 'pointing_experiment_result_' + str(self.user_id) + '.csv'
+        if self.bubble:
+            filepath = 'pointing_experiment_result_' + str(self.user_id) + '_bubble.csv'
+        else:
+            filepath = 'pointing_experiment_result_' + str(self.user_id) + '.csv'
+
+
 
         # checking if file with all experiments exists
         log_file_exists = os.path.isfile(filepath_total)
@@ -364,7 +365,16 @@ class Test(QtWidgets.QWidget):
         if ev.button() == QtCore.Qt.LeftButton:
             # hit = True if self.bubble and self.currentTarget.highlighted else self.model.checkHit(self.currentTarget, ev.x(), ev.y())
             if self.bubble:
-                hit = True if self.currentTarget.highlighted else False
+                if self.currentTarget.highlighted:
+                    hit = True
+                else:
+                    hit = False
+
+                if hit:
+                    self.model.create_log(self.model.stop_measurement(), (ev.x(), ev.y()))
+                    self.model.num_task += 1
+                else:
+                    self.model.num_error += 1
 
             else:
                 hit = self.model.checkHit(self.currentTarget, ev.x(), ev.y())
@@ -387,8 +397,9 @@ class Test(QtWidgets.QWidget):
             elif self.current_state == States.PAUSE:
                 self.current_state = States.TEST
 
-            if self.bubble:
-                self.pt = PointingTechnique(self.model.currentTask(), self.max_bubble_size)
+            if self.current_state is not States.END:
+                if self.bubble:
+                    self.pt = PointingTechnique(self.model.currentTask(), self.max_bubble_size)
 
             self.centerCursor()
             self.update()
@@ -477,15 +488,20 @@ def main():
         sys.stderr.write("Usage: {} <setup file> [<bubble>]\n".format(sys.argv[0]))
         sys.exit(1)
 
-    model = Model(*read_config(sys.argv[1]))
+
+    print(len(sys.argv))
 
     if len(sys.argv) == 2:
         # config ini übergeben
         pass
 
     if len(sys.argv) == 3:
+        print("ind argv 3")
+        model = Model(*read_config(sys.argv[1]), bubble=True)
         test = Test(model, bubble=True)
     else:
+        print("in else")
+        model = Model(*read_config(sys.argv[1]))
         test = Test(model)
 
     sys.exit(app.exec_())

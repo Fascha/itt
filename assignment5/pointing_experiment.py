@@ -355,7 +355,7 @@ class Test(QtWidgets.QWidget):
         (setter method needs to be called)
 
         """
-        if ev.type() == QtCore.QEvent.MouseMove:
+        if self.current_state == States.TEST and ev.type() == QtCore.QEvent.MouseMove:
             self.model.start_measurement()
         self.current_cursor_position = (ev.x(), ev.y())
         self.update()
@@ -377,7 +377,8 @@ class Test(QtWidgets.QWidget):
                     self.model.num_error += 1
 
             else:
-                hit = self.model.checkHit(self.currentTarget, ev.x(), ev.y())
+                if self.current_state == States.TEST:
+                    hit = self.model.checkHit(self.currentTarget, ev.x(), ev.y())
 
             if hit:
                 # this executes if the position of the mosueclick is within the highlighted circle
@@ -390,7 +391,7 @@ class Test(QtWidgets.QWidget):
             self.update()
 
     def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_Space:
+        if event.key() == QtCore.Qt.Key_Space and self.current_state is not States.TEST:
             # doppelte if-Abfrage notwendig?
             if self.current_state == States.INSTRUCTIONS:
                 self.current_state = States.TEST
@@ -488,15 +489,11 @@ def main():
         sys.stderr.write("Usage: {} <setup file> [<bubble>]\n".format(sys.argv[0]))
         sys.exit(1)
 
-
-    print(len(sys.argv))
-
     if len(sys.argv) == 2:
         # config ini übergeben
         pass
 
     if len(sys.argv) == 3:
-        print("ind argv 3")
         model = Model(*read_config(sys.argv[1]), bubble=True)
         test = Test(model, bubble=True)
     else:

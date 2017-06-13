@@ -297,6 +297,7 @@ class Model(object):
 
     def create_log(self, timeontask):
         print("%s; %s; %d; %d; %d;" % (self.timestamp(), self.user_id, self.num_task, timeontask, self.num_error))
+
         logging_dict = OrderedDict([
             ('timestamp', self.timestamp()),
             ('id', self.user_id),

@@ -6,7 +6,7 @@ config = configparser.ConfigParser()
 
 number_participants = 4
 number_repetitions = 4
-distances = ['50', '150', '250', '350']
+distances = ['125', '200', '275', '350']
 widths = ['16', '32', '16', '32']
 
 WINDOW_WIDTH = 800

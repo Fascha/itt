@@ -109,6 +109,7 @@ import sys
 import csv
 import os
 from collections import OrderedDict
+from pointing_technique import PointingTechnique
 
 """
 Description
@@ -181,7 +182,6 @@ class Model(object):
             distance = math.sqrt((current_target_x-self.cursor_start_pos[0])**2 +
                                  (current_target_y-self.cursor_start_pos[1])**2)
 
-            print('distance = ', distance)
             t.append(self.currentTarget)
 
             for i in range(10):
@@ -311,11 +311,14 @@ class Model(object):
 
 class Test(QtWidgets.QWidget):
 
-    def __init__(self, model):
+    def __init__(self, model, bubble=False):
         super(Test, self).__init__()
         self.model = model
-
+        self.bubble = bubble
+        self.bubble_size = 0
+        self.max_bubble_size = 100
         self.cursor_start_pos = (self.model.window_width/2, self.model.window_height/2)
+        self.current_cursor_position = self.cursor_start_pos
         self.initUI()
         self.current_state = States.INSTRUCTIONS
 
@@ -345,27 +348,34 @@ class Test(QtWidgets.QWidget):
             self.drawEnd(event, qp)
         qp.end()
 
-    def mouseMoveEvent(self, e):
+    def mouseMoveEvent(self, ev):
         """
         when mosue is moved first we need to start measurement
         (setter method needs to be called)
 
         """
-        if e.type() == QtCore.QEvent.MouseMove:
+        if ev.type() == QtCore.QEvent.MouseMove:
             self.model.start_measurement()
-        pass
+        self.current_cursor_position = (ev.x(), ev.y())
+        self.update()
 
     def mousePressEvent(self, ev):
         # see model.checkHit!!
         if ev.button() == QtCore.Qt.LeftButton:
-            hit = self.model.checkHit(self.currentTarget, ev.x(), ev.y())
+            # hit = True if self.bubble and self.currentTarget.highlighted else self.model.checkHit(self.currentTarget, ev.x(), ev.y())
+            if self.bubble:
+                hit = True if self.currentTarget.highlighted else False
+
+            else:
+                hit = self.model.checkHit(self.currentTarget, ev.x(), ev.y())
+
             if hit:
                 # this executes if the position of the mosueclick is within the highlighted circle
-                print(len(self.model.tasks))
+                # print(len(self.model.tasks))
                 if self.model.num_task >= len(self.model.tasks):
                     self.current_state = States.END
                 else:
-                    print(self.model.num_task, len(self.model.tasks))
+                    # print(self.model.num_task, len(self.model.tasks))
                     self.current_state = States.PAUSE
             self.update()
 
@@ -376,6 +386,10 @@ class Test(QtWidgets.QWidget):
                 self.current_state = States.TEST
             elif self.current_state == States.PAUSE:
                 self.current_state = States.TEST
+
+            if self.bubble:
+                self.pt = PointingTechnique(self.model.currentTask(), self.max_bubble_size)
+
             self.centerCursor()
             self.update()
 
@@ -394,11 +408,11 @@ class Test(QtWidgets.QWidget):
         qp.drawText(event.rect(), QtCore.Qt.AlignCenter, "THANK YOU FOR PARTICIPATING!")
 
     def drawTest(self, event, qp):
-        print("drawing test")
         self.drawCircles(event, qp)
+        if self.bubble:
+            self.drawBubble(event, qp)
 
     def drawInstructions(self, event, qp):
-        print("drawing instructions")
         qp.setFont(QtGui.QFont('Helvetica', 32))
         qp.drawText(event.rect(), QtCore.Qt.AlignCenter, "POINTING EXPERIMENT\n\n")
         qp.setFont(QtGui.QFont('Helvetica', 16))
@@ -407,7 +421,7 @@ class Test(QtWidgets.QWidget):
         # self.centerCursor()
 
     def drawPause(self, event, qp):
-        print("drawing pause")
+        # print("drawing pause")
         qp.setFont(QtGui.QFont('Helvetica', 16))
         qp.drawText(event.rect(), QtCore.Qt.AlignCenter, "PRESS THE SPACE KEY WHEN YOU ARE READY TO CONTINUE")
 
@@ -415,10 +429,18 @@ class Test(QtWidgets.QWidget):
         qp.setBrush(QtGui.QColor(22, 200, 22))
         qp.drawRect(event.rect())
 
+    def drawBubble(self, event, qp):
+        qp.setBrush(QtGui.QColor(20, 20, 200, 100))
+        qp.drawEllipse(self.current_cursor_position[0]-self.bubble_size, self.current_cursor_position[1]-self.bubble_size, self.bubble_size*2, self.bubble_size*2)
+
     def drawCircles(self, event, qp):
         # drawin rect at centerof the screen around the cursor
         # self.centerCursor()
         qp.drawRect(self.model.window_width/2-5, self.model.window_height/2-5, 10, 10)
+
+        if self.bubble:
+            self.bubble_size = self.pt.filter(self.current_cursor_position)
+
 
         for circle in self.model.currentTask():
             x, y, size, target, highlighted = circle.x, circle.y, circle.size, circle.target, circle.highlighted
@@ -455,16 +477,17 @@ def main():
         sys.stderr.write("Usage: {} <setup file> [<bubble>]\n".format(sys.argv[0]))
         sys.exit(1)
 
+    model = Model(*read_config(sys.argv[1]))
+
     if len(sys.argv) == 2:
         # config ini übergeben
         pass
 
     if len(sys.argv) == 3:
-        # bubble übergebe
-        pass
+        test = Test(model, bubble=True)
+    else:
+        test = Test(model)
 
-    model = Model(*read_config(sys.argv[1]))
-    test = Test(model)
     sys.exit(app.exec_())
 
 
@@ -479,8 +502,8 @@ def read_config(filename):
     cursor_start_x = int(config['cursor_start_x']) if config['cursor_start_x'] else 400
     cursor_start_y = int(config['cursor_start_y']) if config['cursor_start_y'] else 400
 
-    print('width', window_width)
-    print('height', window_height)
+    print('window_width', window_width)
+    print('window_height', window_height)
 
     if config['user'] and config['widths'] and config['distances']:
         widths = [int(x) for x in config['widths'].split(",")]

@@ -125,7 +125,7 @@ class States(Enum):
 
 
 class Circle(object):
-    def __init__(self, x, y, highlighted, size=20):
+    def __init__(self, x, y, highlighted, size):
         self.x = x
         self.y = y
         self.size = size
@@ -174,25 +174,15 @@ class Model(object):
 
             """
             t = []
-            # zufällige Position im radius um den Startpunkt berechnen 
             start_position = (self.window_width/2, self.window_height/2)
-
-            """
-            Position von current target im Radius(distance) um Startposition.
-            random.random() vllt nicht richtig?
-        
-            """
+            # random point with distance around starting point
             random_angle = random.random()*2*math.pi
             current_target_x = start_position[0] + math.cos(random_angle)*self.distances[x]
             current_target_y = start_position[1] + math.sin(random_angle)*self.distances[x]
 
-            self.currentTarget = Circle(current_target_x, current_target_y, True)
+            self.currentTarget = Circle(current_target_x, current_target_y, True, self.sizes[x])
 
             # print(self.distances[x], current_target_x, current_target_y)
-            """
-            berechne nochmal die distance, weil die targets oft komisch liegen , aber wird richtig ausgegeben
-            von der Startposition aus
-            """
 
             distance = math.sqrt((current_target_x-start_position[0])**2 + (current_target_y-start_position[1])**2)
 
@@ -241,7 +231,7 @@ class Model(object):
     def createRandomCircle(self):
         random_x = random.randint(25, self.window_width - 25)
         random_y = random.randint(25, self.window_height - 25)
-        return Circle(random_x, random_y, False)
+        return Circle(random_x, random_y, False, 20)
 
     def checkIfOverlapping(self, existingTargets, newTarget):
         """
@@ -304,7 +294,7 @@ class Model(object):
             ('num_task', self.num_task),
             # error list index out of range
             ('target_distance', self.distances[self.num_task]),
-            ('target_size', self.currentTarget.size),
+            ('target_size', self.sizes[self.num_task]),
             # check if pointer is with or without bubble
             ('bubble_pointer', False),
             ('reaction_time', timeontask),
@@ -349,8 +339,7 @@ class Model(object):
 
         if distance < target.size/2:
             #  highlighted clicked
-            self.create_log(self.stop_measurement())      
-            # increase task after logging!!
+            self.create_log(self.stop_measurement())
             self.num_task += 1
             return True
         else:
@@ -411,18 +400,15 @@ class Test(QtWidgets.QWidget):
             hit = self.model.checkHit(self.currentTarget, ev.x(), ev.y())
             if hit:
                 # this executes if the position of the mosueclick is within the highlighted circle
-                print("in hit")
-                print(self.model.num_task)
                 print(len(self.model.tasks))
                 if self.model.num_task >= len(self.model.tasks):
                     self.current_state = States.END
                 else:
+                    print(self.model.num_task, len(self.model.tasks))
                     self.current_state = States.PAUSE
-                # pass
             self.update()
 
     def keyPressEvent(self, event):
-
         if event.key() == QtCore.Qt.Key_Space:
             # doppelte if-Abfrage notwendig?
             if self.current_state == States.INSTRUCTIONS:
@@ -462,7 +448,6 @@ class Test(QtWidgets.QWidget):
         print("drawing pause")
         qp.setFont(QtGui.QFont('Helvetica', 16))
         qp.drawText(event.rect(), QtCore.Qt.AlignCenter, "PRESS THE SPACE KEY WHEN YOU ARE READY TO CONTINUE")
-        self.centerCursor()
 
     def drawBackground(self, event, qp):
         qp.setBrush(QtGui.QColor(22, 200, 22))

@@ -7,18 +7,35 @@ config = configparser.ConfigParser()
 number_participants = 4
 number_repetitions = 4
 distances = ['50', '150', '250', '350']
-widths = ['15', '30']
-widths.extend(widths)
+widths = ['15', '30', '15', '30']
 
 for i in range(number_participants):
+    combinations = []
+    for w in widths:
+        for d in distances:
+            combinations.append((w, d))
+    random.shuffle(combinations)
 
-    config['POINTING EXPERIMENT'] = {'USER': 1,
-                                 'WIDTHS': '30, 50, 60, 70',
-                                 'DISTANCES': '100, 200, 300, 400',
+    """
+
+    COUNTER BALANCING
+
+
+    """
+    
+    temp_widths = [w[0] for w in combinations]
+    temp_distances = [d[1] for d in combinations]
+
+    widths_string = ', '.join(temp_widths)
+    distances_string = ', '.join(temp_distances)
+
+    config['POINTING EXPERIMENT'] = {'USER': str(i),
+                                 'WIDTHS': widths_string,
+                                 'DISTANCES': distances_string,
                                  'WINDOW_WIDTH': 800,
                                  'WINDOW_HEIGHT': 800}
 
-    config['POINTING EXPERIMENT']['USER'] = str(i)
+    """
 
     random.shuffle(distances)
     distances_string = ', '.join(distances)
@@ -27,6 +44,15 @@ for i in range(number_participants):
     widths_string = ', '.join(widths)
     config['POINTING EXPERIMENT']['WIDTHS'] = str(widths_string)
 
+
+    config['POINTING EXPERIMENT'] = {'USER': str(i),
+                                 'WIDTHS': '30, 50, 60, 70',
+                                 'DISTANCES': '100, 200, 300, 400',
+                                 'WINDOW_WIDTH': 800,
+                                 'WINDOW_HEIGHT': 800}
+
+
+    """
 
     with open('config_' + str(i) + '.ini', 'w') as configfile:
         config.write(configfile)

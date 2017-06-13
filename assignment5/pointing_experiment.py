@@ -204,7 +204,7 @@ class Model(object):
             print('distance = ', distance)
             t.append(self.currentTarget)
 
-            for i in range(500):
+            for i in range(50):
                 """
                 random_x = random.randint(0, self.window_width)
                 random_y = random.randint(0, self.window_height)
@@ -231,7 +231,9 @@ class Model(object):
     def createRandomCircle(self):
         random_x = random.randint(25, self.window_width - 25)
         random_y = random.randint(25, self.window_height - 25)
-        return Circle(random_x, random_y, False, 20)
+        #return Circle(random_x, random_y, False, 20)
+        return Circle(random_x, random_y, False, self.currentTarget.size)
+
 
     def checkIfOverlapping(self, existingTargets, newTarget):
         """

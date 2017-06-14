@@ -364,7 +364,7 @@ class Test(QtWidgets.QWidget):
         # see model.checkHit!!
         if ev.button() == QtCore.Qt.LeftButton:
             # hit = True if self.bubble and self.currentTarget.highlighted else self.model.checkHit(self.currentTarget, ev.x(), ev.y())
-            if self.bubble:
+            if self.bubble and self.current_state == States.TEST:
                 if self.currentTarget.highlighted:
                     hit = True
                 else:

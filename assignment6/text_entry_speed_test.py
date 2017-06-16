@@ -74,15 +74,12 @@ class Test(QtWidgets.QWidget):
         vlayout = QtWidgets.QVBoxLayout()
 
         sentence_display = QtWidgets.QLabel("TEST SATZ ETC")
+        # sentence_display.setText("This is Sentence 1")
+
         vlayout.addWidget(sentence_display)
 
-
-        sentence_display.setText("alsdjklasjdlka")
-
         text_edit = TextEdit()
-
         vlayout.addWidget(text_edit)
-
 
         self.setLayout(vlayout)
 
@@ -96,7 +93,7 @@ class TextEdit(QtWidgets.QTextEdit):
     def __init__(self):
         super(TextEdit, self).__init__()
 
-        self.example = 'hallo bitte tippen sie diesen text ab'
+        self.example = 'Text Edit Sample Text'
         self.setText(self.example)
 
         self.timer = QtCore.QTime()
@@ -105,10 +102,10 @@ class TextEdit(QtWidgets.QTextEdit):
 
     def initUI(self):
         self.setGeometry(1200, 300, 800, 800)
-        self.setWindowTitle('TextLogger')
-        self.setFocusPolicy(QtCore.Qt.StrongFocus)
+        # self.setWindowTitle('TextLogger')
+        # self.setFocusPolicy(QtCore.Qt.StrongFocus)
         # self.setMouseTracking(True)
-        self.show()
+        # self.show()
 
     def keyPressEvent(self, ev):
         super(TextEdit, self).keyPressEvent(ev)

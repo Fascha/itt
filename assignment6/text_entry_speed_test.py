@@ -51,15 +51,14 @@ word length, including spaces (Yamada 1980)). Thus, the result is reported in wo
 """
 TODO:
 
-- the application should measure how long it takes to write a sentence (delimited at the end with a newline)
-- and each individual word.
+- keyrelease not working when completer is on
+- read and parse 5000 msot common words list
 
+- add space when autocompleting?
 
-
-
-present sentence
-when space pressed check if word matches
-when enter pressed check if sentence matches
+- think about when a word is finished
+    currently hitting "space"
+    maybe if len(current_typed_word) == len(word) ??
 
 
 """
@@ -70,12 +69,9 @@ http://rowinggolfer.blogspot.de/2010/08/qtextedit-with-autocompletion-using.html
 
 https://stackoverflow.com/questions/28956693/pyqt5-qtextedit-auto-completion
 
-"""
-
 
 """
-keyrelease not working when completer is on
-"""
+
 
 
 class Test(QtWidgets.QWidget):
@@ -86,6 +82,8 @@ class Test(QtWidgets.QWidget):
 
         # self.sentences = ['fabian', 'This is Sentence 1', 'HEre is the second example sentence', ' And the third one']
         self.sentences = ['Fabian Schatz', 'This is Sentence 1']
+
+        self.sentences = self.read_sentences_from_file()
 
         self.word_timer = QtCore.QTime()
         self.word_timer_running = False
@@ -115,6 +113,19 @@ class Test(QtWidgets.QWidget):
         self.vlayout.addWidget(self.sentence_display)
         self.vlayout.addWidget(self.text_edit)
         self.show()
+
+    def read_sentences_from_file(self):
+        sentences = []
+        try:
+            filepath = 'phrases2.txt'
+            with open(filepath, 'r') as f:
+                for line in f:
+                    sentences.append(line.strip())
+        except IOError:
+            sys.stderr.write('File with sentences not found!')
+            sys.exit(1)
+
+        return sentences
 
     def next_sentence(self):
         self.current_task_number += 1

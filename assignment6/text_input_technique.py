@@ -1,14 +1,11 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+import sys
 
 class AutoComplete(QtWidgets.QCompleter):
     insertText = QtCore.pyqtSignal(str)
 
     def __init__(self):
-        # super(AutoComplete, self).__init__()
-        print("Auto complete initialized")
-
-        words = ['Fabian', 'Florian', 'Farbius', 'Fisch']
+        words = self.setup_wordlist()
 
         QtWidgets.QCompleter.__init__(self, words)
         self.setCompletionMode(QtWidgets.QCompleter.PopupCompletion)
@@ -20,6 +17,21 @@ class AutoComplete(QtWidgets.QCompleter):
     def getSelected(self):
         return self.lastSelected
 
+
+    def setup_wordlist(self):
+
+        words = []
+        try:
+            filepath = 'phrases2.txt'
+            with open(filepath, 'r') as f:
+                for line in f:
+                    for word in line.split(' '):
+                        words.append(word.strip())
+            return list(set(words))
+        except IOError:
+            sys.stderr.write('File with wordlist not found!')
+
+        return ['']
 
 
 

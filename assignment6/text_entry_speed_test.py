@@ -42,6 +42,7 @@ Entry speed metric: Entry speed is calculated by dividing the length of the tran
 entry time (in seconds), multiplying by sixty (seconds in a minute), and dividing by five (the accepted
 word length, including spaces (Yamada 1980)). Thus, the result is reported in words-per-minute (wpm).
 
+
 """
 
 
@@ -70,18 +71,22 @@ class Test(QtWidgets.QWidget):
         super(Test, self).__init__()
 
         # self.sentences = ['fabian', 'This is Sentence 1', 'HEre is the second example sentence', ' And the third one']
-        self.sentences = ['fabian', 'This is Sentence 1']
-        self.timer = QtCore.QTime()
+        self.sentences = ['Fabian Schatz', 'This is Sentence 1']
+
+        self.word_timer = QtCore.QTime()
+        self.word_timer_running = False
+
+        self.sentence_timer = QtCore.QTime()
+        self.sentence_timer_running = False
+
+        self.test_time = 0
+        self.text_length = 0
 
         self.current_task_number = -1
-
         self.text_edit = TextEdit()
         self.text_edit.set_reference(self)
-
-        self.sentence_display = QtWidgets.QLabel("TEST SATZ ETC")
-
+        self.sentence_display = QtWidgets.QLabel()
         self.initUI()
-
         self.next_sentence()
 
     def initUI(self):
@@ -99,14 +104,48 @@ class Test(QtWidgets.QWidget):
         self.current_task_number += 1
         if self.current_task_number < len(self.sentences):
             next_sentence = self.sentences[self.current_task_number]
-
+            self.text_length += len(next_sentence)
             self.text_edit.set_current_sentence(next_sentence)
             self.sentence_display.setText(next_sentence)
         else:
-            self.text_edit.setText('Your Statistics bla bla bla:\nWPM: 200')
+            self.text_edit.setText('Your Statistics:\nWPM: {}'.format(self.calculate_wpm()))
             self.sentence_display.setText('Test finished! Thank You for participating!')
 
             self.text_edit.log('test_finished,None')
+
+
+    def start_word_timer(self):
+        if not self.word_timer_running:
+            self.word_timer_running = True
+            self.word_timer.start()
+
+    def stop_word_timer(self):
+        if self.word_timer_running:
+            self.word_timer_running = False
+            return self.word_timer.elapsed()
+
+    def start_sentence_timer(self):
+        if not self.sentence_timer_running:
+            self.sentence_timer_running = True
+            self.sentence_timer.start()
+
+    def stop_sentence_timer(self):
+        if self.sentence_timer_running:
+            self.sentence_timer_running = False
+            time = self.sentence_timer.elapsed()
+            self.test_time += time
+            return time
+
+    def calculate_wpm(self):
+        """
+        Entry speed metric: Entry speed is calculated by dividing the length of the transcribed text by the
+        entry time (in seconds), multiplying by sixty (seconds in a minute), and dividing by five (the accepted
+        word length, including spaces (Yamada 1980)). Thus, the result is reported in words-per-minute (wpm).
+
+        currently the time between the sentences is not measured!
+        we could you a third timer or display all sentences at once instead of one at a time
+        """
+        return (self.text_length / (self.test_time / 1000.0)) * 60.0 / 5.0
 
 
 class TextEdit(QtWidgets.QTextEdit):
@@ -120,24 +159,29 @@ class TextEdit(QtWidgets.QTextEdit):
 
     def keyPressEvent(self, ev):
         super(TextEdit, self).keyPressEvent(ev)
+        if not self.test.sentence_timer_running:
+            self.test.start_sentence_timer()
+        if not self.test.word_timer_running:
+            self.test.start_word_timer()
+
         if ev.key() == QtCore.Qt.Key_Return:
-            self.log('key_pressed,enter')
+            self.log('key_pressed', event_value='enter')
         elif ev.key() == QtCore.Qt.Key_Space:
-            self.log('key_pressed,space')
+            self.log('key_pressed', event_value='space')
         else:
-            self.log('key_pressed,' + ev.text())
+            self.log('key_pressed', event_value=ev.text())
 
     def keyReleaseEvent(self, ev):
         super(TextEdit, self).keyReleaseEvent(ev)
         if ev.key() == QtCore.Qt.Key_Return:
-            self.log('key_released,enter')
+            self.log('key_released', event_value='enter')
             self.check_word()
             self.check_sentence()
         elif ev.key() == QtCore.Qt.Key_Space:
-            self.log('key_released,space')
+            self.log('key_released', event_value='space')
             self.check_word()
         else:
-            self.log('key_released,' + ev.text())
+            self.log('key_released', event_value=ev.text())
 
     def check_word(self):
         last_word = self.toPlainText().lower().split(' ')
@@ -151,7 +195,7 @@ class TextEdit(QtWidgets.QTextEdit):
         else:
             word_correct = False
 
-        self.log('word_complete,{}'.format(word_correct))
+        self.log('word_complete', event_value=word_correct, timeontask=self.test.stop_word_timer())
 
     def check_sentence(self):
         # print(self.toPlainText().lower().strip())
@@ -160,7 +204,7 @@ class TextEdit(QtWidgets.QTextEdit):
         else:
             sentence_correct = False
 
-        self.log('sentence_complete,{}'.format(sentence_correct))
+        self.log('sentence_complete', event_value=sentence_correct, timeontask=self.test.stop_sentence_timer())
         self.test.next_sentence()
 
     def set_reference(self, test):
@@ -174,8 +218,8 @@ class TextEdit(QtWidgets.QTextEdit):
         self.current_sentence = str(sentence).lower()
         self.set_current_word(str(sentence).lower().split(' ')[0])
 
-    def log(self, event):
-        print('{}, {}'.format(event, self.timestamp()))
+    def log(self, event, event_value=None, timeontask=None):
+        print('{}, {}, {}, {}'.format(event, event_value, self.timestamp(), timeontask))
 
     def timestamp(self):
         return QtCore.QDateTime.currentDateTime().toString(QtCore.Qt.ISODate)

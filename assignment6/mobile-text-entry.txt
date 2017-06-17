@@ -1,0 +1,26 @@
+verview text input methods
+Eavluation:
+copying text:
+- additional Focus of attention
+creating text
++ typical usage
+- time and error measurement is difficult, user has to think about what to write and the experimenters can't say for sure what he intended
+- no generalizable results
+
+--> mix: memorize ssimple phrases, or show a paragraph line by line to a user (small focus of attention as desired, because participants have to look at only one place at a time
+
+measurement:
+speed:
+characters per second, words per minute: multiplying characters per minute by 60 and dividing by 5
+accuracy:
+type of errors: insert wrong character, omit, insert an additional, transpose
+hard to measuer -> confusion matrix
+
+optimisation techqunique
+movement minimisation and 
+language prediction
+ke minimazaiton
+
+
+Overview text entry methods:
+

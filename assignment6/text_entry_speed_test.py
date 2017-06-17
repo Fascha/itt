@@ -64,67 +64,115 @@ when enter pressed check if sentence matches
 
 
 class Test(QtWidgets.QWidget):
-
+    WIDTH = 800
+    HEIGHT = 800
     def __init__(self):
         super(Test, self).__init__()
 
-        WIDTH = 800
-        HEIGHT = 800
+        # self.sentences = ['fabian', 'This is Sentence 1', 'HEre is the second example sentence', ' And the third one']
+        self.sentences = ['fabian', 'This is Sentence 1']
+        self.timer = QtCore.QTime()
 
-        vlayout = QtWidgets.QVBoxLayout()
+        self.current_task_number = -1
 
-        sentence_display = QtWidgets.QLabel("TEST SATZ ETC")
-        # sentence_display.setText("This is Sentence 1")
+        self.text_edit = TextEdit()
+        self.text_edit.set_reference(self)
 
-        vlayout.addWidget(sentence_display)
+        self.sentence_display = QtWidgets.QLabel("TEST SATZ ETC")
 
-        text_edit = TextEdit()
-        vlayout.addWidget(text_edit)
+        self.initUI()
 
-        self.setLayout(vlayout)
+        self.next_sentence()
 
-        self.setGeometry(300, 300, WIDTH, HEIGHT)
+    def initUI(self):
+        self.setGeometry(300, 300, self.WIDTH, self.HEIGHT)
         self.setWindowTitle('Text Entry Test')
+
+        self.vlayout = QtWidgets.QVBoxLayout()
+        self.setLayout(self.vlayout)
+
+        self.vlayout.addWidget(self.sentence_display)
+        self.vlayout.addWidget(self.text_edit)
         self.show()
+
+    def next_sentence(self):
+        self.current_task_number += 1
+        if self.current_task_number < len(self.sentences):
+            next_sentence = self.sentences[self.current_task_number]
+
+            self.text_edit.set_current_sentence(next_sentence)
+            self.sentence_display.setText(next_sentence)
+        else:
+            self.text_edit.setText('Your Statistics bla bla bla:\nWPM: 200')
+            self.sentence_display.setText('Test finished! Thank You for participating!')
+
+            self.text_edit.log('test_finished,None')
 
 
 class TextEdit(QtWidgets.QTextEdit):
 
     def __init__(self):
         super(TextEdit, self).__init__()
-
-        self.example = 'Text Edit Sample Text'
-        self.setText(self.example)
-
-        self.timer = QtCore.QTime()
-
-        # self.initUI()
-
-    def initUI(self):
-        self.setGeometry(1200, 300, 800, 800)
-        # self.setWindowTitle('TextLogger')
-        # self.setFocusPolicy(QtCore.Qt.StrongFocus)
-        # self.setMouseTracking(True)
-        # self.show()
+        # self.example = 'Text Edit Sample Text'
+        # self.setText(self.example)
+        self.current_word = ''
+        self.current_sentence = ''
 
     def keyPressEvent(self, ev):
         super(TextEdit, self).keyPressEvent(ev)
         if ev.key() == QtCore.Qt.Key_Return:
-            self.log('pressed,enter')
+            self.log('key_pressed,enter')
         elif ev.key() == QtCore.Qt.Key_Space:
-            self.log('pressed,space')
+            self.log('key_pressed,space')
         else:
-            self.log('pressed,' + ev.text())
-
+            self.log('key_pressed,' + ev.text())
 
     def keyReleaseEvent(self, ev):
         super(TextEdit, self).keyReleaseEvent(ev)
         if ev.key() == QtCore.Qt.Key_Return:
-            self.log('released,enter')
+            self.log('key_released,enter')
+            self.check_word()
+            self.check_sentence()
         elif ev.key() == QtCore.Qt.Key_Space:
-            self.log('released,space')
+            self.log('key_released,space')
+            self.check_word()
         else:
-            self.log('released,' + ev.text())
+            self.log('key_released,' + ev.text())
+
+    def check_word(self):
+        last_word = self.toPlainText().lower().split(' ')
+        if len(last_word) > 1:
+            last_word = last_word[-2]
+        else:
+            last_word = last_word[-1]
+
+        if last_word == self.current_word:
+            word_correct = True
+        else:
+            word_correct = False
+
+        self.log('word_complete,{}'.format(word_correct))
+
+    def check_sentence(self):
+        # print(self.toPlainText().lower().strip())
+        if self.toPlainText().lower().strip() == self.current_sentence:
+            sentence_correct = True
+        else:
+            sentence_correct = False
+
+        self.log('sentence_complete,{}'.format(sentence_correct))
+        self.test.next_sentence()
+
+    def set_reference(self, test):
+        self.test = test
+
+    def set_current_word(self, word):
+        self.current_word = str(word).lower()
+
+    def set_current_sentence(self, sentence):
+        self.setText('')
+        self.current_sentence = str(sentence).lower()
+        self.set_current_word(str(sentence).lower().split(' ')[0])
 
     def log(self, event):
         print('{}, {}'.format(event, self.timestamp()))
@@ -135,12 +183,9 @@ class TextEdit(QtWidgets.QTextEdit):
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
-    # text_edit = TextEdit()
     # chord_input = ChordInputMethod()
     # text_logger.installEventFilter(chord_input)
-
     test = Test()
-
     sys.exit(app.exec_())
 
 if __name__ == '__main__':

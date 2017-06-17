@@ -1,26 +1,10 @@
-verview text input methods
-Eavluation:
-copying text:
-- additional Focus of attention
-creating text
-+ typical usage
-- time and error measurement is difficult, user has to think about what to write and the experimenters can't say for sure what he intended
-- no generalizable results
-
---> mix: memorize ssimple phrases, or show a paragraph line by line to a user (small focus of attention as desired, because participants have to look at only one place at a time
-
-measurement:
-speed:
-characters per second, words per minute: multiplying characters per minute by 60 and dividing by 5
-accuracy:
-type of errors: insert wrong character, omit, insert an additional, transpose
-hard to measuer -> confusion matrix
-
-optimisation techqunique
-movement minimisation and 
-language prediction
-ke minimazaiton
-
-
-Overview text entry methods:
-
+The paper discusses methods and provides suggestions to conduct a valid user study of a text input method.
+Practically, it evaluates for example creation and copying text as opposing techniques. Even though creating text might have a higher external validity and the users need no additional focus of attention, time and error rate are difficult to measure and therefore no generalizable results can be achieved. Therefore, it porposes a mix of both techniques:
+Letting the user see his typing below the input phrase might be the best solution.
+Since new text input usually requires practice, it is difficult to perform novice as well as expert studies.
+Qualtitative as well as quantitave measurements, like speed and accuracy, can be conducted.
+Speed gets usually meaured in words per minute where a word is assumed to be of a length of five characters.
+Accuracy is depending on the error rate. Errors can also be divided into different types of errors, for example typing an additional character, omitting a character or confound characters that are placed close to each other on the keyboard.The QWERTY keyboard has high values for speed as well as accuracy (Figure 3).
+When designing a study, the participants' position and the number of hands on the device has to be taken into account. 
+Another section focuses on optimization techniques. To minimze movement time the distance of the movement can be adjusted in consideration of Fitts' Law. Predicting words is another optimization method to be planned well.
+The paper concludes with a survey on key-based and stylus-based text input methods. Key-based methods like a telephone pad uses one key for multiple characters. Other techniques are for example the (Half-)Qwerty keyboard or five-key text entry where characters are shown on a display and get selected by moving one of the keys. Stylus-based methods require a device to enter text and are developed in many different ways like Unistrokes or soft keyboards.

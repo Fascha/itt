@@ -1,5 +1,6 @@
 import sys
 from PyQt5 import Qt, QtGui, QtCore, QtWidgets
+from text_input_technique import AutoComplete
 
 """
 
@@ -63,6 +64,19 @@ when enter pressed check if sentence matches
 
 """
 
+"""
+completer ressource
+http://rowinggolfer.blogspot.de/2010/08/qtextedit-with-autocompletion-using.html
+
+https://stackoverflow.com/questions/28956693/pyqt5-qtextedit-auto-completion
+
+"""
+
+
+"""
+keyrelease not working when completer is on
+"""
+
 
 class Test(QtWidgets.QWidget):
     WIDTH = 800
@@ -84,6 +98,8 @@ class Test(QtWidgets.QWidget):
 
         self.current_task_number = -1
         self.text_edit = TextEdit()
+
+
         self.text_edit.set_reference(self)
         self.sentence_display = QtWidgets.QLabel()
         self.initUI()
@@ -113,6 +129,8 @@ class Test(QtWidgets.QWidget):
 
             self.text_edit.log('test_finished,None')
 
+    def set_completer(self, completer):
+        self.text_edit.set_completer(completer)
 
     def start_word_timer(self):
         if not self.word_timer_running:
@@ -156,9 +174,65 @@ class TextEdit(QtWidgets.QTextEdit):
         # self.setText(self.example)
         self.current_word = ''
         self.current_sentence = ''
+        self.completer = None
+
+    def set_completer(self, completer):
+        if self.completer:
+            self.disconnect(self.completer, 0, self, 0)
+        if not completer:
+            return
+
+        completer.setWidget(self)
+        completer.setCompletionMode(QtWidgets.QCompleter.PopupCompletion)
+        completer.setCaseSensitivity(QtCore.Qt.CaseInsensitive)
+
+        self.completer = completer
+        self.completer.insertText.connect(self.insertCompletion)
+
+
+
+    def insertCompletion(self, completion):
+        tc = self.textCursor()
+        extra = (len(completion) - len(self.completer.completionPrefix()))
+        tc.movePosition(QtGui.QTextCursor.Left)
+        tc.movePosition(QtGui.QTextCursor.EndOfWord)
+        tc.insertText(completion[-extra:])
+        self.setTextCursor(tc)
+        self.completer.popup().hide()
+
+    def focusInEvent(self, event):
+        if self.completer:
+            self.completer.setWidget(self);
+        QtWidgets.QTextEdit.focusInEvent(self, event)
 
     def keyPressEvent(self, ev):
-        super(TextEdit, self).keyPressEvent(ev)
+        if self.completer:
+            tc = self.textCursor()
+
+            if ev.key() == QtCore.Qt.Key_Tab and self.completer.popup().isVisible():
+                self.completer.insertText.emit(self.completer.getSelected())
+                self.completer.setCompletionMode(QtWidgets.QCompleter.PopupCompletion)
+                self.log('auto_completion', event_value=self.completer.getSelected())
+                return
+
+            super(TextEdit, self).keyPressEvent(ev)
+
+            tc.select(QtGui.QTextCursor.WordUnderCursor)
+            cr = self.cursorRect()
+
+            if len(tc.selectedText()) > 0:
+                self.completer.setCompletionPrefix(tc.selectedText())
+                popup = self.completer.popup()
+                popup.setCurrentIndex(self.completer.completionModel().index(0,0))
+
+                cr.setWidth(self.completer.popup().sizeHintForColumn(0)
+                            + self.completer.popup().verticalScrollBar().sizeHint().width())
+                self.completer.complete(cr)
+            else:
+                self.completer.popup().hide()
+        else:
+            super(TextEdit, self).keyPressEvent(ev)
+
         if not self.test.sentence_timer_running:
             self.test.start_sentence_timer()
         if not self.test.word_timer_running:
@@ -166,6 +240,8 @@ class TextEdit(QtWidgets.QTextEdit):
 
         if ev.key() == QtCore.Qt.Key_Return:
             self.log('key_pressed', event_value='enter')
+        elif ev.key() == QtCore.Qt.Key_Tab:
+            self.log('key_pressed', event_value='tab')
         elif ev.key() == QtCore.Qt.Key_Space:
             self.log('key_pressed', event_value='space')
         else:
@@ -177,6 +253,8 @@ class TextEdit(QtWidgets.QTextEdit):
             self.log('key_released', event_value='enter')
             self.check_word()
             self.check_sentence()
+        elif ev.key() == QtCore.Qt.Key_Tab:
+            self.log('key_pressed', event_value='tab')
         elif ev.key() == QtCore.Qt.Key_Space:
             self.log('key_released', event_value='space')
             self.check_word()
@@ -226,10 +304,17 @@ class TextEdit(QtWidgets.QTextEdit):
 
 
 def main():
+    auto_complete = False
+    if len(sys.argv) > 1 and sys.argv[1] == 'on':
+        auto_complete = True
+
     app = QtWidgets.QApplication(sys.argv)
-    # chord_input = ChordInputMethod()
-    # text_logger.installEventFilter(chord_input)
     test = Test()
+
+    if auto_complete:
+        ac = AutoComplete()
+        test.set_completer(ac)
+
     sys.exit(app.exec_())
 
 if __name__ == '__main__':

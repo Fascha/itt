@@ -1,0 +1,21 @@
+Paper 1:
+COMPASS: Rotational Keyboard on Non-Touch Smartwatches
+Xin Yi, Chun Yu, Weijie Xu, Xiaojun Bi, Yuanchun Shi
+
+In this paper a new text input method for smartwatches without touch display was designed and evaluated. The technique circularly presents letters at the border of the watch and, by turning the bezel, the user can select the next letter. Three cursors are displayed on the most predictably letters so the user can select them as fast as possible. In the evaluation participants the fastest had to perform 8 blocks which each included 10 sentences. The experimenters measured their task completion rate and the accuracy and it turned out that it is a promising new technique where speed improved with practice.
+
+
+Paper 2:
+Improving Dwell-Based Gaze Typing with Dynamic, Cascading Dwell Times
+Martez E. Mott, Shane Williams, Jacob O. Wobbrock and Meredith Ringel Morris
+
+The researches implemented a new technique for gaze-based text input, where they reduced the amount of dwell-time (the time a character needs to be fixated in order to be selected) for the letters that are more likely to be chosen by the user and therefore anticipated a faster input method. The dwell-time for the likely next characters was reduced by 10% and the dwell-time for unlikely characters was increased.
+A longitudinal study  was conducted where participants could adjust their personal dwell-time beforehand.
+Results show that their approach increased the speed measured in words per second typed of the participants (including disabled people with ALS) and also reduced the number of errors.
+
+
+Paper 3:
+Investigating Tilt-based Gesture Keyboard Entry for Single-Handed Text Entry on Large Devices
+Hui-Shyong Yeo, Xiao-Shen Phang, Steven J. Castellucci, Per Ola Kristensson and Aaron Quigley
+
+In this research a text input technique ("Shape writing in Motion") for touchscreens was implemented which can be helful especially for big touchscreen sizes: It's based on traditional shape writing but instead of navigating to all characters on the keyboard the user only needs to tilt the device in order to select the next character. The quanitative results of two conducted studies (with either transcription or composition tasks) show that typing and shape writing techqnique outperformed the new implemented technique in terms of words per second. But they also conducted a longitudinal study with one participant, which shows that the technique improves with practice.

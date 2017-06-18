@@ -80,9 +80,6 @@ class Test(QtWidgets.QWidget):
     def __init__(self):
         super(Test, self).__init__()
 
-        # self.sentences = ['fabian', 'This is Sentence 1', 'HEre is the second example sentence', ' And the third one']
-        self.sentences = ['Fabian Schatz', 'This is Sentence 1']
-
         self.sentences = self.read_sentences_from_file()
 
         self.word_timer = QtCore.QTime()
@@ -96,7 +93,6 @@ class Test(QtWidgets.QWidget):
 
         self.current_task_number = -1
         self.text_edit = TextEdit()
-
 
         self.text_edit.set_reference(self)
         self.sentence_display = QtWidgets.QLabel()
@@ -200,8 +196,6 @@ class TextEdit(QtWidgets.QTextEdit):
         self.completer = completer
         self.completer.insertText.connect(self.insertCompletion)
 
-
-
     def insertCompletion(self, completion):
         tc = self.textCursor()
         extra = (len(completion) - len(self.completer.completionPrefix()))
@@ -220,13 +214,14 @@ class TextEdit(QtWidgets.QTextEdit):
         if self.completer:
             tc = self.textCursor()
 
-            if ev.key() == QtCore.Qt.Key_Tab and self.completer.popup().isVisible():
+            if (ev.key() == QtCore.Qt.Key_Tab or ev.key() == QtCore.Qt.Key_Return) and self.completer.popup().isVisible():
                 self.completer.insertText.emit(self.completer.getSelected())
                 self.completer.setCompletionMode(QtWidgets.QCompleter.PopupCompletion)
                 self.log('auto_completion', event_value=self.completer.getSelected())
                 return
 
-            super(TextEdit, self).keyPressEvent(ev)
+            if ev.key() is not QtCore.Qt.Key_Return:
+                super(TextEdit, self).keyPressEvent(ev)
 
             tc.select(QtGui.QTextCursor.WordUnderCursor)
             cr = self.cursorRect()
@@ -287,14 +282,16 @@ class TextEdit(QtWidgets.QTextEdit):
         self.log('word_complete', event_value=word_correct, timeontask=self.test.stop_word_timer())
 
     def check_sentence(self):
-        # print(self.toPlainText().lower().strip())
         if self.toPlainText().lower().strip() == self.current_sentence:
             sentence_correct = True
         else:
             sentence_correct = False
 
-        self.log('sentence_complete', event_value=sentence_correct, timeontask=self.test.stop_sentence_timer())
-        self.test.next_sentence()
+        if len(self.toPlainText().strip()) == len(self.current_sentence):
+            self.log('sentence_complete', event_value=sentence_correct, timeontask=self.test.stop_sentence_timer())
+            self.test.next_sentence()
+        else:
+            self.log('sentence_incomplete', event_value=sentence_correct, timeontask=self.test.stop_sentence_timer())
 
     def set_reference(self, test):
         self.test = test

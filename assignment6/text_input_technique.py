@@ -19,10 +19,14 @@ class AutoComplete(QtWidgets.QCompleter):
 
 
     def setup_wordlist(self):
-
         words = []
+        # filepath = 'word_list_gt1.txt'
+        # filepath = 'word_list_gt2.txt'
+        # filepath = 'word_list_gt3.txt'
+        # filepath = 'word_list_gt4.txt'
+        filepath = 'phrases2.txt'
         try:
-            filepath = 'phrases2.txt'
+
             with open(filepath, 'r') as f:
                 for line in f:
                     for word in line.split(' '):

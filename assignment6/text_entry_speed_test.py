@@ -154,6 +154,9 @@ class Test(QtWidgets.QWidget):
 
             self.text_edit.log('test_finished,None')
 
+	def set_id(self, id):
+		text_edit.set_id(id)
+		
     def set_completer(self, completer):
         self.text_edit.set_completer(completer)
 
@@ -213,6 +216,9 @@ class TextEdit(QtWidgets.QTextEdit):
         # connecting method
         self.completer.insertText.connect(self.insertCompletion)
 
+	def set_id(self, id):
+		self.id = id
+		
     def insertCompletion(self, completion):
         tc = self.textCursor()
         extra = (len(completion) - len(self.completer.completionPrefix()))
@@ -254,7 +260,8 @@ class TextEdit(QtWidgets.QTextEdit):
             else:
                 self.completer.popup().hide()
         else:
-            super(TextEdit, self).keyPressEvent(ev)
+			if ev.key() is not QtCore.Qt.Key_Return:
+				super(TextEdit, self).keyPressEvent(ev)
 
         # starting timers if they are not running
         if not self.test.sentence_timer_running:
@@ -324,6 +331,16 @@ class TextEdit(QtWidgets.QTextEdit):
 
     def log(self, event, event_value=None, timeontask=None):
         print('{}, {}, {}, {}'.format(event, event_value, self.timestamp(), timeontask))
+		
+		filepath = 'text_entry_speed_test_log_{}_{}'.format(self.id, self.completer)
+		# checking if file with all experiments exists
+        log_file_exists = os.path.isfile(filepath)
+
+        # appending to the concatenated file
+        with open(filepath_total, 'a') as f:
+            if not log_file_exists:
+                f.write('event,event_value,timestamp,timeontask\n')
+            f.write('{},{},{},{}'.format(event, event_value, self.timestamp(), timeontask))
 
     def timestamp(self):
         return QtCore.QDateTime.currentDateTime().toString(QtCore.Qt.ISODate)
@@ -334,10 +351,17 @@ def main():
     # checking if autocompleting is turned on via commandline parameter
     if len(sys.argv) > 1 and sys.argv[1] == 'on':
         auto_complete = True
+	
+	if len(sys.argv) > 2:
+		id = sys.argv[2]
+	else:
+		sys.stderr.write("Usage: {} <on/off> <id>\n".format(sys.argv[0]))
+        sys.exit(1)
 
     app = QtWidgets.QApplication(sys.argv)
     test = Test()
-
+	test.set_id(id)
+	
     if auto_complete:
         ac = AutoComplete()
         test.set_completer(ac)

@@ -1,6 +1,7 @@
 import sys
 from PyQt5 import Qt, QtGui, QtCore, QtWidgets
 from text_input_technique import AutoComplete
+import os
 
 """
 
@@ -149,13 +150,13 @@ class Test(QtWidgets.QWidget):
             self.text_edit.set_current_sentence(next_sentence)
             self.sentence_display.setText(next_sentence)
         else:
-            self.text_edit.setText('Your Statistics:\nWPM: {}'.format(self.calculate_wpm()))
+            wpm = self.calculate_wpm()
+            self.text_edit.setText('Your Statistics:\nWPM: {}'.format(wpm))
             self.sentence_display.setText('Test finished! Thank You for participating!')
+            self.text_edit.log('test_finished', wpm)
 
-            self.text_edit.log('test_finished,None')
-
-	def set_id(self, id):
-		text_edit.set_id(id)
+    def set_id(self, id):
+        self.text_edit.set_id(id)
 		
     def set_completer(self, completer):
         self.text_edit.set_completer(completer)
@@ -216,8 +217,8 @@ class TextEdit(QtWidgets.QTextEdit):
         # connecting method
         self.completer.insertText.connect(self.insertCompletion)
 
-	def set_id(self, id):
-		self.id = id
+    def set_id(self, id):
+        self.id = id
 		
     def insertCompletion(self, completion):
         tc = self.textCursor()
@@ -258,23 +259,28 @@ class TextEdit(QtWidgets.QTextEdit):
                             + self.completer.popup().verticalScrollBar().sizeHint().width())
                 self.completer.complete(cr)
             else:
+                self.key_logging(ev)
                 self.completer.popup().hide()
         else:
-			if ev.key() is not QtCore.Qt.Key_Return:
-				super(TextEdit, self).keyPressEvent(ev)
+            super(TextEdit, self).keyPressEvent(ev)
+            self.key_logging(ev)
 
         # starting timers if they are not running
         if not self.test.sentence_timer_running:
             self.test.start_sentence_timer()
         if not self.test.word_timer_running:
             self.test.start_word_timer()
-        # logging
+    # logging
+    def key_logging(self, ev):
         if ev.key() == QtCore.Qt.Key_Return:
             self.log('key_pressed', event_value='enter')
+            self.check_word()
+            self.check_sentence()
         elif ev.key() == QtCore.Qt.Key_Tab:
             self.log('key_pressed', event_value='tab')
         elif ev.key() == QtCore.Qt.Key_Space:
             self.log('key_pressed', event_value='space')
+            self.check_word()
         else:
             self.log('key_pressed', event_value=ev.text())
 
@@ -282,13 +288,10 @@ class TextEdit(QtWidgets.QTextEdit):
         super(TextEdit, self).keyReleaseEvent(ev)
         if ev.key() == QtCore.Qt.Key_Return:
             self.log('key_released', event_value='enter')
-            self.check_word()
-            self.check_sentence()
         elif ev.key() == QtCore.Qt.Key_Tab:
             self.log('key_pressed', event_value='tab')
         elif ev.key() == QtCore.Qt.Key_Space:
             self.log('key_released', event_value='space')
-            self.check_word()
         else:
             self.log('key_released', event_value=ev.text())
 
@@ -314,9 +317,13 @@ class TextEdit(QtWidgets.QTextEdit):
 
         if len(self.toPlainText().strip()) == len(self.current_sentence):
             self.log('sentence_complete', event_value=sentence_correct, timeontask=self.test.stop_sentence_timer())
-            self.test.next_sentence()
         else:
             self.log('sentence_incomplete', event_value=sentence_correct, timeontask=self.test.stop_sentence_timer())
+        if self.completer:
+            if not self.completer.popup().isVisible():    
+                self.test.next_sentence()
+        else:
+            self.test.next_sentence()
 
     def set_reference(self, test):
         self.test = test
@@ -331,16 +338,20 @@ class TextEdit(QtWidgets.QTextEdit):
 
     def log(self, event, event_value=None, timeontask=None):
         print('{}, {}, {}, {}'.format(event, event_value, self.timestamp(), timeontask))
-		
-		filepath = 'text_entry_speed_test_log_{}_{}'.format(self.id, self.completer)
-		# checking if file with all experiments exists
+
+        if self.completer:
+            c = 'on'
+        else:
+            c = 'off'
+        filepath = 'text_entry_speed_test_log_{}_{}.csv'.format(self.id, c)
+        # checking if file with all experiments exists
         log_file_exists = os.path.isfile(filepath)
 
         # appending to the concatenated file
-        with open(filepath_total, 'a') as f:
+        with open(filepath, 'a') as f:
             if not log_file_exists:
                 f.write('event,event_value,timestamp,timeontask\n')
-            f.write('{},{},{},{}'.format(event, event_value, self.timestamp(), timeontask))
+            f.write('{},{},{},{}\n'.format(event, event_value, self.timestamp(), timeontask))
 
     def timestamp(self):
         return QtCore.QDateTime.currentDateTime().toString(QtCore.Qt.ISODate)
@@ -352,15 +363,15 @@ def main():
     if len(sys.argv) > 1 and sys.argv[1] == 'on':
         auto_complete = True
 	
-	if len(sys.argv) > 2:
-		id = sys.argv[2]
-	else:
-		sys.stderr.write("Usage: {} <on/off> <id>\n".format(sys.argv[0]))
+    if len(sys.argv) > 2:
+        id = sys.argv[2]
+    else:
+        sys.stderr.write("Usage: {} <on/off> <id>\n".format(sys.argv[0]))
         sys.exit(1)
 
     app = QtWidgets.QApplication(sys.argv)
     test = Test()
-	test.set_id(id)
+    test.set_id(id)
 	
     if auto_complete:
         ac = AutoComplete()

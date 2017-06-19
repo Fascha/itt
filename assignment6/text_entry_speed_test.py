@@ -61,6 +61,14 @@ TODO:
     maybe if len(current_typed_word) == len(word) ??
 
 
+
+- randomize phrases of phrases2.txt
+- only 8 (?) in each block
+
+- log to csv
+
+- pep8
+
 """
 
 """
@@ -71,8 +79,6 @@ https://stackoverflow.com/questions/28956693/pyqt5-qtextedit-auto-completion
 
 
 """
-
-
 
 class Test(QtWidgets.QWidget):
     WIDTH = 800
@@ -126,9 +132,9 @@ class Test(QtWidgets.QWidget):
                     sentences.append(line.strip())
         except IOError:
             sys.stderr.write('File with sentences not found!')
-            sys.exit(1)
+            sys.exit()
 
-        return sentences
+        return sentences[:8]
 
     def next_sentence(self):
         """

@@ -17,5 +17,4 @@ Results show that their approach increased the speed measured in words per secon
 Paper 3:
 Investigating Tilt-based Gesture Keyboard Entry for Single-Handed Text Entry on Large Devices
 Hui-Shyong Yeo, Xiao-Shen Phang, Steven J. Castellucci, Per Ola Kristensson and Aaron Quigley
-
 In this research a text input technique ("Shape writing in Motion") for touchscreens was implemented which can be helful especially for big touchscreen sizes: It's based on traditional shape writing but instead of navigating to all characters on the keyboard the user only needs to tilt the device in order to select the next character. The quanitative results of two conducted studies (with either transcription or composition tasks) show that typing and shape writing techqnique outperformed the new implemented technique in terms of words per second. But they also conducted a longitudinal study with one participant, which shows that the technique improves with practice.

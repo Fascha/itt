@@ -4,75 +4,6 @@ from text_input_technique import AutoComplete
 import os
 
 """
-
-6.2: Design an implement a tool for measuring text entry speed
-Implement a tool that allows for measuring and logging typing speed (i.e., a window with an editable textbox).
-• download the example file textedit.py and adjust it.
-• test data should be logged to stdout (not to a file) in CSV format (see http://www.cse.yorku.ca/~stevenc/tema/ for best
-practices of logging such data).
-• the application should measure how long it takes to write a sentence (delimited at the end with a newline) and each individual
-word. Find out how to best define beginning/end of word/sentence (and when to start/stop measuring the time).
-• you do not need to log typing errors for this assignment
-• log appropriate data for the following events (indicate which event you are logging as the first field in the log data):
-– key pressed
-– word typed
-– sentence typed
-– test finished (all sentences typed)
-• informally test whether your tool works as expected
-Hand in the following file:
-text_entry_speed_test.py: a Python/PyQt script implementing a typing speed test.
-Points
-• 2 Script conforms to PEP8, is well structured and includes comments
-• 2 Script works as expected
-• 2 Script outputs sensible and valid CSV data
-
-"""
-
-
-"""
-
-Entry speed metric: Entry speed is calculated by
-dividing the length of the transcribed text by the entry
-time (in seconds), multiplying by sixty (seconds in a
-minute), and dividing by five (the accepted word
-length, including spaces [11]). Thus, the result is
-reported in words-per-minute (wpm).
-
-
-
-Entry speed metric: Entry speed is calculated by dividing the length of the transcribed text by the
-entry time (in seconds), multiplying by sixty (seconds in a minute), and dividing by five (the accepted
-word length, including spaces (Yamada 1980)). Thus, the result is reported in words-per-minute (wpm).
-
-
-"""
-
-
-
-"""
-TODO:
-
-- keyrelease not working when completer is on
-- read and parse 5000 msot common words list
-
-- add space when autocompleting?
-
-- think about when a word is finished
-    currently hitting "space"
-    maybe if len(current_typed_word) == len(word) ??
-
-
-
-- randomize phrases of phrases2.txt
-- only 8 (?) in each block
-
-- log to csv
-
-- pep8
-
-"""
-
-"""
 completer ressource
 http://rowinggolfer.blogspot.de/2010/08/qtextedit-with-autocompletion-using.html
 
@@ -81,9 +12,11 @@ https://stackoverflow.com/questions/28956693/pyqt5-qtextedit-auto-completion
 
 """
 
+
 class Test(QtWidgets.QWidget):
     WIDTH = 800
     HEIGHT = 800
+
     def __init__(self):
         super(Test, self).__init__()
 
@@ -157,7 +90,7 @@ class Test(QtWidgets.QWidget):
 
     def set_id(self, id):
         self.text_edit.set_id(id)
-		
+
     def set_completer(self, completer):
         self.text_edit.set_completer(completer)
 
@@ -219,7 +152,7 @@ class TextEdit(QtWidgets.QTextEdit):
 
     def set_id(self, id):
         self.id = id
-		
+
     def insertCompletion(self, completion):
         tc = self.textCursor()
         extra = (len(completion) - len(self.completer.completionPrefix()))
@@ -231,14 +164,15 @@ class TextEdit(QtWidgets.QTextEdit):
 
     def focusInEvent(self, event):
         if self.completer:
-            self.completer.setWidget(self);
+            self.completer.setWidget(self)
         QtWidgets.QTextEdit.focusInEvent(self, event)
 
     def keyPressEvent(self, ev):
-        if self.completer: # checking if autocompletion is turned on
+        if self.completer:  # checking if autocompletion is turned on
             tc = self.textCursor()
             # checking if tab or return is pressed while the popup is visible
-            if (ev.key() == QtCore.Qt.Key_Tab or ev.key() == QtCore.Qt.Key_Return) and self.completer.popup().isVisible():
+            if (ev.key() == QtCore.Qt.Key_Tab or ev.key() == QtCore.Qt.Key_Return) \
+                    and self.completer.popup().isVisible():
                 self.completer.insertText.emit(self.completer.getSelected())
                 self.completer.setCompletionMode(QtWidgets.QCompleter.PopupCompletion)
                 self.log('auto_completion', event_value=self.completer.getSelected())
@@ -253,7 +187,7 @@ class TextEdit(QtWidgets.QTextEdit):
             if len(tc.selectedText()) > 0:
                 self.completer.setCompletionPrefix(tc.selectedText())
                 popup = self.completer.popup()
-                popup.setCurrentIndex(self.completer.completionModel().index(0,0))
+                popup.setCurrentIndex(self.completer.completionModel().index(0, 0))
 
                 cr.setWidth(self.completer.popup().sizeHintForColumn(0)
                             + self.completer.popup().verticalScrollBar().sizeHint().width())
@@ -270,6 +204,7 @@ class TextEdit(QtWidgets.QTextEdit):
             self.test.start_sentence_timer()
         if not self.test.word_timer_running:
             self.test.start_word_timer()
+
     # logging
     def key_logging(self, ev):
         if ev.key() == QtCore.Qt.Key_Return:
@@ -320,7 +255,7 @@ class TextEdit(QtWidgets.QTextEdit):
         else:
             self.log('sentence_incomplete', event_value=sentence_correct, timeontask=self.test.stop_sentence_timer())
         if self.completer:
-            if not self.completer.popup().isVisible():    
+            if not self.completer.popup().isVisible():
                 self.test.next_sentence()
         else:
             self.test.next_sentence()
@@ -362,7 +297,7 @@ def main():
     # checking if autocompleting is turned on via commandline parameter
     if len(sys.argv) > 1 and sys.argv[1] == 'on':
         auto_complete = True
-	
+
     if len(sys.argv) > 2:
         id = sys.argv[2]
     else:
@@ -372,12 +307,13 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
     test = Test()
     test.set_id(id)
-	
+
     if auto_complete:
         ac = AutoComplete()
         test.set_completer(ac)
 
     sys.exit(app.exec_())
+
 
 if __name__ == '__main__':
     main()

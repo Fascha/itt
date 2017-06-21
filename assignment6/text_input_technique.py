@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 
+
 class AutoComplete(QtWidgets.QCompleter):
     insertText = QtCore.pyqtSignal(str)
 
@@ -16,7 +17,6 @@ class AutoComplete(QtWidgets.QCompleter):
 
     def getSelected(self):
         return self.lastSelected
-
 
     def setup_wordlist(self):
         words = []
@@ -36,7 +36,3 @@ class AutoComplete(QtWidgets.QCompleter):
             sys.stderr.write('File with wordlist not found!')
 
         return ['']
-
-
-
-
